@@ -1,4 +1,4 @@
-using Liblsl
+using LSL
 using Test
 
 @testset "Liblsl.jl" begin

@@ -1,6 +1,7 @@
-# Liblsl.jl
-#
-# Library installation script based on BinaryProvider LibFoo.jl example
+# LSL.jl: Julia interface for Lab Streaming Layer
+# Copyright (C) 2019 Samuel Powell
+
+# build.jl: Library installation script based on BinaryProvider LibFoo.jl example
 
 using BinaryProvider
 
