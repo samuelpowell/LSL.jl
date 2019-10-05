@@ -1,0 +1,13 @@
+name = "Liblsl"
+uuid = "57c3d5b1-721f-43a0-b20c-e9152d812276"
+authors = ["Samuel Powell"]
+version = "0.1.0"
+
+[compat]
+julia = "1.2"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
