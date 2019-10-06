@@ -1,0 +1,275 @@
+# LSL.jl: Julia interface for Lab Streaming Layer
+# Copyright (C) 2019 Samuel Powell
+
+# StreamInlet.jl: type and method definitions for steam inlet
+
+export StreamInlet
+export open_stream, close_stream, set_postprocessing, pull_sample
+export was_clock_reset, smoothing_halftime, samples_available
+
+mutable struct StreamInlet{T}
+  handle::lsl_inlet
+  info::StreamInfo{T}
+
+  function StreamInlet(handle, info::StreamInfo{T}) where T
+    inlet = new{T}(handle, info)
+    finalizer(_destroy, inlet)
+  end
+end
+
+# Destroy a StreamInfo handle
+function _destroy(inlet::StreamInlet)
+  if inlet.handle != C_NULL
+    lsl_destroy_inlet(inlet)
+  end
+  return nothing
+end
+
+# Define conversion to pointer
+unsafe_convert(::Type{lsl_inlet}, inlet::StreamInlet) = inlet.handle
+
+# Define constructor
+"""
+    StreamInlet(info; max_buflen = 360, max_chunklen = 0, recover = True, procesing_flags = 0)
+
+Establish a new stream inlet from a resolved stream description.
+
+# Arguments
+- `info::StreamInfo`: A resolved stream description object (as coming from one of the
+                      resolver functions). Note: the stream_inlet may also be constructed
+                      with a fully-specified stream_info, if the desired channel format and
+                      count is already known up-front, but this is strongly discouraged and
+                      should only ever be done if there is no time to resolve the stream
+                      up-front (e.g., due to limitations in the client program).                  
+
+# Keyword arguments
+- `max_buflen::Integer`: The maximum amount of data to buffer (in seconds if there is a
+                         nominal sampling rate, otherwise x100 in samples). Recording
+                         applications want to use a fairly large buffer size here, while
+                         real-time applications would only buffer as much as they need to 
+                         perform their next calculation.
+- `max_chunklen::Integer`: The maximum size, in samples, at which chunks are transmitted
+                           (the default corresponds to the chunk sizes used by the sender).
+                           Recording programs can use a generous size here (leaving it to
+                           the network how to pack things), while real-time applications may 
+                           want a finer (perhaps 1-sample) granularity. If left unspecified
+                           (=0), the sender determines the chunk granularity.
+- `recover::Bool`: Try to silently recover lost streams that are recoverable (those that 
+                   have a source_id set). In all other cases (recover is false, or the 
+                   stream is not recoverable), functions may throw a lost_error if the 
+                   stream's source is lost (e.g., due to an app or computer crash).
+"""
+function StreamInlet(info::StreamInfo{T}; 
+                     max_buflen = 360,
+                     max_chunklen = 0,
+                     recover = true,
+                     processing_flags = 0) where T
+
+  # Create and test handle
+  handle = lsl_create_inlet(info, max_buflen, max_chunklen, recover)
+  if handle == C_NULL
+    error("liblsl library returned NULL pointer during StreamInlet creation")
+  end
+
+  if processing_flags > 0
+    handle_error(lsl_set_postprocessing(handle, processing_flags))
+  end
+  
+  return StreamInlet(handle, info)
+end
+
+#
+# Open close and time correction
+#
+
+"""
+    open_stream(inlet::StreamInlet; timeout=LSL_FOREVER)
+    
+Subscribe to the data stream.
+
+All samples pushed in at the other end from this moment onwards will be queued and
+eventually be delivered in response to pull_sample() or pull_chunk() calls. Pulling a sample
+without some preceding open_stream is permitted (the stream will then be opened implicitly).
+
+Function may throw a timeout error, or lost error (if the stream source has been lost).
+
+# Keyword arguments
+- `timeout::Number`: timeout of the operation.
+"""
+function open_stream(inlet::StreamInlet; timeout = LSL_FOREVER)
+  errcode = Ref{Int32}(0)
+  lsl_open_stream(inlet, timeout, errcode)
+  handle_error(errcode[])
+  return inlet
+end
+
+"""
+    close_stream(inlet::StreamInlet)
+
+Drop the current data stream.
+
+All samples that are still buffered or in flight will be dropped and transmission and
+buffering of data for this inlet will be stopped. If an application stops being interested
+in data from a source (temporarily or not) but keeps the outlet alive, it should call
+lsl_close_stream() to not waste unnecessary system and network  resources.
+"""
+close_stream(inlet::StreamInlet) = lsl_close_stream(inlet)
+
+"""
+    time_correction(inlet::StreamInlet; timeout = LSL_FOREVER)
+
+Retrieve an estimated time correction offset for the given stream.
+  
+The first call to this function takes several miliseconds until a reliable first estimate is
+obtained. Subsequent calls are instantaneous (and rely on periodic background updates). The
+precision of these estimates should be below 1 ms (empirically within +/-0.2 ms).
+
+Returns the current time correction estimate. This is the number that needs to be added to a
+time stamp that was remotely generated via local_clock() to map it into the local clock
+domain of this machine.
+
+Function may throw a timeout error, or lost error (if the stream source has been lost).
+
+# Keyword arguments
+`timeout::Number`: timeout to acquire the first time-correction estimate.
+"""
+function time_correction(inlet::StreamInlet; timeout = LSL_FOREVER)
+  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  timcorr = lsl_time_correction(inlet, timeout, errcode)
+  handle_error(errcode[])
+  return timcorr
+end
+
+"""
+  set_postprocessing(inlet::StreamInlet, flags::UInt32)
+
+Set post-processing flags to use.
+
+By default, the inlet performs NO post-processing and returns the ground-truth time stamps,
+which can then be manually synchronized using time_correction(), and then 
+smoothed/dejittered if desired. This function allows automating these two and possibly more
+operations.
+
+Warning: when you enable this, you will no longer receive or be able to recover the original
+time stamps.
+
+Function may throw an argument error if unknown flags are supplied.
+
+# Arguments:
+`flags::UInt32`: An integer that is the result of bitwise OR'ing one or more options from
+                 processing_options_t together. A good setting is to use post_ALL.
+                 
+"""
+function set_postprocessing(inlet::StreamInlet, flags::UInt32)
+  handle_error(lsl_set_postprocessing(inlet, flags))
+  return inlet
+end
+
+
+#
+# Pull samples
+#
+
+"""
+    pull_sample(inlet::StreamInfo; timeout = LSL_FOREVER)
+
+Pull a sample from the inlet and return as a vector of appropriate type.
+
+Function may throw timeout error, lost error if the stream has been lost. Note that if a
+timeout occurrs, or if a timeout of 0.0 is specified an no new sample is available, the 
+timestamp will be 0.0.
+
+# Keyword arguments
+`timeout::Number`: timeout to acquire the sample.
+"""
+function pull_sample(inlet::StreamInlet{Float32}; timeout = LSL_FOREVER)
+  data = Vector{Float32}(undef, channel_count(inlet.info))
+  errcode = Ref{Int32}(0); Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  timestamp = lsl_pull_sample_f(inlet, data, length(data), timeout, errcode)
+  handle_error(errcode[])
+  return timestamp, data
+end
+
+function pull_sample(inlet::StreamInlet{Float64}; timeout = LSL_FOREVER)
+  data = Vector{Float64}(undef, channel_count(inlet.info))
+  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  timestamp = lsl_pull_sample_d(inlet, data, length(data), timeout, errcode)
+  handle_error(errcode[])
+  return timestamp, data
+end
+
+function pull_sample(inlet::StreamInlet{Clong}; timeout = LSL_FOREVER)
+  data = Vector{Clong}(undef, channel_count(inlet.info))
+  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  timestamp = lsl_pull_sample_l(inlet, data, length(data), timeout, errcode)
+  handle_error(errcode[])
+  return timestamp, data
+end
+
+function pull_sample(inlet::StreamInlet{Int32}; timeout = LSL_FOREVER)
+  data = Vector{Int32}(undef, channel_count(inlet.info))
+  errcode = Ref{Int32}(0) # Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  timestamp = lsl_pull_sample_i(inlet, data, length(data), timeout, errcode)
+  handle_error(errcode[])
+  return timestamp, data
+end
+
+function pull_sample(inlet::StreamInlet{Int16}; timeout = LSL_FOREVER)
+  data = Vector{Int16}(undef, channel_count(inlet.info))
+  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  timestamp = lsl_pull_sample_s(inlet, data, length(data), timeout, errcode)
+  handle_error(errcode[])
+  return timestamp, data
+end
+
+function pull_sample(inlet::StreamInlet{Cchar}; timeout = LSL_FOREVER)
+  data = Vector{Cchar}(undef, channel_count(inlet.info))
+  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  timestamp = lsl_pull_sample_c(inlet, data, length(data), timeout, errcode)
+  handle_error(errcode[])
+  return timestamp, data
+end
+
+#
+# Utility functions
+#
+
+"""
+  samples_available(inlet::StreamInlet)
+
+Query whether samples are currently available for immediate pickup.
+
+Note that it is not a good idea to use samples_available() to determine whether a pull_*()
+call would block: to be sure, set the pull timeout to 0.0 or an acceptably low value. If the
+underlying implementation supports it, the value will be the number of samples available
+(otherwise it will be 1 or 0).
+"""
+samples_available(inlet::StreamInlet) = lsl_samples_available(inlet)
+
+"""
+    was_clock_reset(inlet::StreamInlet)
+
+Query whether the clock was potentially reset since the last call to was_clock_reset().
+
+This is rarely-used function is only needed for applications that combine multiple
+time_correction values to estimate precise clock drift if they should tolerate cases where
+the source machine was hot-swapped or restarted.
+"""
+was_clock_reset(inlet::StreamInlet) = lsl_was_clock_reset(inlet)
+
+"""
+  smoothing_halftime(inlet::StreamInlet, value)
+
+Override the half-time (forget factor) of the time-stamp smoothing.
+
+The default is 90 seconds unless a different value is set in the config file. Using a longer
+window will yield lower jitter in the time stamps, but longer windows will have trouble
+tracking changes in the clock rate (usually due to temperature changes); the default is able
+to track changes up to 10 degrees C per minute sufficiently well.
+
+# Arguments
+`value::Number`: The new value, in seconds. This is the time after which a past sample will
+                 be weighted by 1/2 in the exponential smoothing window.
+"""
+smoothing_halftime(inlet, value) = handle_error(lsl_smoothing_halftime(inlet, value))
+
