@@ -153,10 +153,6 @@ function lsl_push_sample_v(out, data)
     ccall((:lsl_push_sample_v, liblsl), Int32, (lsl_outlet, Ptr{Cvoid}), out, data)
 end
 
-function lsl_push_sample_f(out, data)
-    ccall((:lsl_push_sample_f, liblsl), Int32, (lsl_outlet, Ptr{Cfloat}), out, data)
-end
-
 function lsl_push_sample_ft(out, data, timestamp)
     ccall((:lsl_push_sample_ft, liblsl), Int32, (lsl_outlet, Ptr{Cfloat}, Cdouble), out, data, timestamp)
 end
