@@ -1,7 +1,14 @@
 # LSL.jl: Julia interface for Lab Streaming Layer
 # Copyright (C) 2019 Samuel Powell
 
-# StreamInfo: type and method definitions for steam information object
+# StreamInfo.jl: type and method definitions for steam information object
+
+import Base.unsafe_convert
+
+export StreamInfo
+export name, type, channel_count, nominal_srate, channel_format, source_id
+export version, created_at, session_id, uid, hostname
+export desc, xml
 
 """
     StreamInfo
@@ -26,7 +33,7 @@ mutable struct StreamInfo{T}
 end
 
 # Define conversion to pointer
-convert(::Type{lsl_streaminfo}, info::StreamInfo) = info.handle
+unsafe_convert(::Type{lsl_streaminfo}, info::StreamInfo) = info.handle
 
 # Define constructor
 """
@@ -220,7 +227,7 @@ session_id(info::StreamInfo) = unsafe_string(lsl_get_session_id(info))
 Return hostname of the providing machine (once bound to an outlet). Modification is not
 permitted.
 """
-hosntame(info::StreamInfo) = unsafe_string(lsl_get_hostname(info))
+hostname(info::StreamInfo) = unsafe_string(lsl_get_hostname(info))
 
  
 #
@@ -247,10 +254,10 @@ desc(info::StreamInfo) = lsl_get_desc(info)
 """
     xml(info::StreamInfo)
 
-Return string containing the entire StreamInfo in XML format.
+Return XML document (from LightXML) containing the entire StreamInfo.
 
-This yields an XML document (in string form) whose top-level element is `<info>`. The info
-element contains one element for each field of the StreamInfo instance, including:
+This yields an XML document whose top-level element is `<info>`. The info element contains
+one element for each field of the StreamInfo instance, including:
 
 - the core elements `<name>`, `<type>`, `<channel_count`, `<nominal_srate>`, 
   `<channel_format>`, `<source_id>`
@@ -263,9 +270,9 @@ function xml(info::StreamInfo)
     if xml_string_ptr == C_NULL
       error("liblsl returned NULL pointer when requesting XML stream information")
     end
-    xml_string = unsafe_string(xml_string_ptr)
+    xmldoc = LightXML.parse_string(unsafe_string(xml_string_ptr))
     lsl_destroy_string(xml_string_ptr)
-    return xml_string
+    return xmldoc
 end
 
 

@@ -7,6 +7,9 @@ module LSL
 
 using Libdl
 using CEnum
+using LightXML
+
+export protocol_version, library_version, library_info, local_clock
 
 # Load in `deps.jl`, complaining if it does not exist
 const depsjl_path = joinpath(@__DIR__, "..", "deps", "deps.jl")
@@ -32,6 +35,39 @@ _lsl_channel_format(::Type{Int32})      = lsl_channel_format_t(4)
 _lsl_channel_format(::Type{Int16})      = lsl_channel_format_t(5)
 _lsl_channel_format(::Type{Int64})      = lsl_channel_format_t(7)
 _lsl_channel_format(::Type{T}) where T  = lsl_channel_format_t(0)
+
+# Error handling
+
+function handle_error(errcode)
+
+  if errcode >= 0
+    return errcode
+  elseif errcode == -1
+    error("operation failed due to timeout")
+  elseif errcode == -2
+    error("the stream has been lost")
+  elseif errcode == -3
+    error("an argument was incorrectly specified")
+  elseif errcode == -4
+    error("an internal error has occurred")
+  else
+    error("an unknown error has occurred")
+  end
+
+  return 0
+
+end
+
+
+
+@cenum lsl_error_code_t::Int32 begin
+    lsl_no_error = 0
+    lsl_timeout_error = -1
+    lsl_lost_error = -2
+    lsl_argument_error = -3
+    lsl_internal_error = -4
+end
+
 
 # Basic functions
 """
@@ -82,6 +118,7 @@ local_clock() = lsl_local_clock()
 
 # High level object API
 include("StreamInfo.jl")
+include("StreamOutlet.jl")
 #include("StreamOutlet.jl")
 #include("StreamInlet.jl")
 
