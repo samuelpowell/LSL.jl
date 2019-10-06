@@ -4,6 +4,7 @@
 # StreamInfo.jl: type and method definitions for steam information object
 
 import Base.unsafe_convert
+import Base.show
 
 export StreamInfo
 export name, type, channel_count, nominal_srate, channel_format, source_id
@@ -30,6 +31,12 @@ a file header).
 mutable struct StreamInfo{T}
   handle::lsl_streaminfo
   format::Type{T}
+
+  function StreamInfo(handle, format::Type{T}) where T
+    info = new{T}(handle, format)
+    finalizer(_destroy, info)
+  end
+  
 end
 
 # Define conversion to pointer
@@ -81,9 +88,8 @@ function StreamInfo(; name::String = "untitled",
   if handle == C_NULL
     error("liblsl library returned NULL pointer during StreamInfo creation")
   end
-  
-  # Assign finalizer and return StreamInfo instance
-  return finalizer(_destroy, StreamInfo(handle, channel_format))
+
+  return StreamInfo(handle, channel_format)
 end
 
 # Destroy a StreamInfo handle
@@ -93,6 +99,14 @@ function _destroy(info::StreamInfo)
   end
   return nothing
 end
+
+function Base.show(io::IO, info::StreamInfo)
+  print(io, "Stream ", source_id(info), "\tname: ", name(info), "\ttype: ", type(info))
+end
+
+
+
+
 
 #
 # Core information retrieval (assigned at construction)

@@ -33,8 +33,39 @@ _lsl_channel_format(::Type{Float64})    = lsl_channel_format_t(2)
 _lsl_channel_format(::Type{String})     = lsl_channel_format_t(3)
 _lsl_channel_format(::Type{Int32})      = lsl_channel_format_t(4)
 _lsl_channel_format(::Type{Int16})      = lsl_channel_format_t(5)
+_lsl_channel_format(::Type{Cchar})      = lsl_channel_format_t(6)
 _lsl_channel_format(::Type{Int64})      = lsl_channel_format_t(7)
 _lsl_channel_format(::Type{T}) where T  = lsl_channel_format_t(0)
+
+function _jl_channel_format(lsl_format::lsl_channel_format_t)
+
+  if lsl_format == 1
+    return Float32
+  elseif lsl_format == 2
+    return Float64
+  elseif lsl_format == 3
+    return String
+  elseif lsl_format == 4
+    return Int32
+  elseif lsl_format == 5
+    return Int16
+  elseif lsl_format == 6
+    return Cchar
+  elseif lsl_format == 7
+    return Int64
+  else 
+    return Cvoid
+  end
+
+end
+
+_jl_channel_format(::Type{Float32})    = lsl_channel_format_t(1)
+_jl_channel_format(::Type{Float64})    = lsl_channel_format_t(2)
+_jl_channel_format(::Type{String})     = lsl_channel_format_t(3)
+_jl_channel_format(::Type{Int32})      = lsl_channel_format_t(4)
+_jl_channel_format(::Type{Int16})      = lsl_channel_format_t(5)
+_jl_channel_format(::Type{Int64})      = lsl_channel_format_t(7)
+_jl_channel_format(::Type{T}) where T  = lsl_channel_format_t(0)
 
 # Error handling
 
@@ -108,5 +139,6 @@ local_clock() = lsl_local_clock()
 include("StreamInfo.jl")
 include("StreamOutlet.jl")
 include("StreamInlet.jl")
+include("Resolver.jl")
 
 end # module

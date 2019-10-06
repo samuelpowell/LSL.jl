@@ -10,6 +10,19 @@ export was_clock_reset, smoothing_halftime, samples_available
 mutable struct StreamInlet{T}
   handle::lsl_inlet
   info::StreamInfo{T}
+
+  function StreamInlet(handle, info::StreamInfo{T}) where T
+    inlet = new{T}(handle, info)
+    finalizer(_destroy, inlet)
+  end
+end
+
+# Destroy a StreamInfo handle
+function _destroy(inlet::StreamInlet)
+  if inlet.handle != C_NULL
+    lsl_destroy_inlet(inlet)
+  end
+  return nothing
 end
 
 # Define conversion to pointer
@@ -62,18 +75,8 @@ function StreamInlet(info::StreamInfo{T};
     handle_error(lsl_set_postprocessing(handle, processing_flags))
   end
   
-  # Assign finalizer and return StreamOutlet instance
-  return finalizer(_destroy, StreamInlet(handle, info))
+  return StreamInlet(handle, info)
 end
-
-# Destroy a StreamInfo handle
-function _destroy(inlet::StreamInlet)
-  if inlet.handle != C_NULL
-    lsl_destroy_inlet(inlet)
-  end
-  return nothing
-end
-
 
 #
 # Open close and time correction
@@ -94,7 +97,7 @@ Function may throw a timeout error, or lost error (if the stream source has been
 - `timeout::Number`: timeout of the operation.
 """
 function open_stream(inlet::StreamInlet; timeout = LSL_FOREVER)
-  errcode = Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  errcode = Ref{Int32}(0)
   lsl_open_stream(inlet, timeout, errcode)
   handle_error(errcode[])
   return inlet
@@ -131,7 +134,7 @@ Function may throw a timeout error, or lost error (if the stream source has been
 `timeout::Number`: timeout to acquire the first time-correction estimate.
 """
 function time_correction(inlet::StreamInlet; timeout = LSL_FOREVER)
-  errcode = Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
   timcorr = lsl_time_correction(inlet, timeout, errcode)
   handle_error(errcode[])
   return timcorr
@@ -181,7 +184,7 @@ timestamp will be 0.0.
 """
 function pull_sample(inlet::StreamInlet{Float32}; timeout = LSL_FOREVER)
   data = Vector{Float32}(undef, channel_count(inlet.info))
-  errcode = Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  errcode = Ref{Int32}(0); Ref{lsl_error_code_t}(lsl_error_code_t(0))
   timestamp = lsl_pull_sample_f(inlet, data, length(data), timeout, errcode)
   handle_error(errcode[])
   return timestamp, data
@@ -197,7 +200,7 @@ end
 
 function pull_sample(inlet::StreamInlet{Clong}; timeout = LSL_FOREVER)
   data = Vector{Clong}(undef, channel_count(inlet.info))
-  errcode = Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
   timestamp = lsl_pull_sample_l(inlet, data, length(data), timeout, errcode)
   handle_error(errcode[])
   return timestamp, data
@@ -205,7 +208,7 @@ end
 
 function pull_sample(inlet::StreamInlet{Int32}; timeout = LSL_FOREVER)
   data = Vector{Int32}(undef, channel_count(inlet.info))
-  errcode = Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  errcode = Ref{Int32}(0) # Ref{lsl_error_code_t}(lsl_error_code_t(0))
   timestamp = lsl_pull_sample_i(inlet, data, length(data), timeout, errcode)
   handle_error(errcode[])
   return timestamp, data
@@ -213,7 +216,7 @@ end
 
 function pull_sample(inlet::StreamInlet{Int16}; timeout = LSL_FOREVER)
   data = Vector{Int16}(undef, channel_count(inlet.info))
-  errcode = Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
   timestamp = lsl_pull_sample_s(inlet, data, length(data), timeout, errcode)
   handle_error(errcode[])
   return timestamp, data
@@ -221,7 +224,7 @@ end
 
 function pull_sample(inlet::StreamInlet{Cchar}; timeout = LSL_FOREVER)
   data = Vector{Cchar}(undef, channel_count(inlet.info))
-  errcode = Ref{lsl_error_code_t}(lsl_error_code_t(0))
+  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
   timestamp = lsl_pull_sample_c(inlet, data, length(data), timeout, errcode)
   handle_error(errcode[])
   return timestamp, data

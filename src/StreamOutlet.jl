@@ -10,6 +10,20 @@ export push_sample, push_chunk, have_consumers, wait_for_consumers
 mutable struct StreamOutlet{T}
   handle::lsl_outlet
   info::StreamInfo{T}
+
+  function StreamOutlet(handle, info::StreamInfo{T}) where T
+    outlet = new{T}(handle, info)
+    finalizer(_destroy, outlet)
+  end
+
+end
+
+# Destroy a StreamInfo handle
+function _destroy(outlet::StreamOutlet)
+  if outlet.handle != C_NULL
+    lsl_destroy_outlet(outlet)
+  end
+  return nothing
 end
 
 # Define conversion to pointer
@@ -46,18 +60,9 @@ function StreamOutlet(info::StreamInfo{T}; chunk_size = 0, max_buffered = 360) w
   # Create an internal information object
   info = lsl_get_info(handle)
   
-  # Assign finalizer and return StreamOutlet instance
-  return finalizer(_destroy, StreamOutlet(handle, StreamInfo(info, T)))
+  return StreamOutlet(handle, StreamInfo(info, T))
 end
 
-# Destroy a StreamInfo handle
-function _destroy(outlet::StreamOutlet)
-  _destroy(outlet.info)
-  if outlet.handle != C_NULL
-    lsl_destroy_outlet(outlet)
-  end
-  return nothing
-end
 
 #
 # Push sample
