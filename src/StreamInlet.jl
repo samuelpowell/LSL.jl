@@ -4,7 +4,7 @@
 # StreamInlet.jl: type and method definitions for steam inlet
 
 export StreamInlet
-export open_stream, close_stream, set_postprocessing, pull_sample
+export open_stream, close_stream, set_postprocessing, pull_sample, pull_sample!
 export was_clock_reset, smoothing_halftime, samples_available
 
 mutable struct StreamInlet{T}
@@ -170,6 +170,14 @@ end
 # Pull samples
 #
 
+# Type mapping
+_lsl_pull_sample(inlet, data::Vector{Float32}, timeout, errcode) = lsl_pull_sample_f(inlet, data, length(data), timeout, errcode)
+_lsl_pull_sample(inlet, data::Vector{Float64}, timeout, errcode) = lsl_pull_sample_d(inlet, data, length(data), timeout, errcode)
+_lsl_pull_sample(inlet, data::Vector{Clong}, timeout, errcode) = lsl_pull_sample_l(inlet, data, length(data), timeout, errcode)
+_lsl_pull_sample(inlet, data::Vector{Int32}, timeout, errcode) = lsl_pull_sample_i(inlet, data, length(data), timeout, errcode)
+_lsl_pull_sample(inlet, data::Vector{Int16}, timeout, errcode) = lsl_pull_sample_s(inlet, data, length(data), timeout, errcode)
+_lsl_pull_sample(inlet, data::Vector{Cchar}, timeout, errcode) = lsl_pull_sample_c(inlet, data, length(data), timeout, errcode)
+
 """
     pull_sample(inlet::StreamInfo; timeout = LSL_FOREVER)
 
@@ -182,51 +190,66 @@ timestamp will be 0.0.
 # Keyword arguments
 `timeout::Number`: timeout to acquire the sample.
 """
-function pull_sample(inlet::StreamInlet{Float32}; timeout = LSL_FOREVER)
-  data = Vector{Float32}(undef, channel_count(inlet.info))
-  errcode = Ref{Int32}(0); Ref{lsl_error_code_t}(lsl_error_code_t(0))
-  timestamp = lsl_pull_sample_f(inlet, data, length(data), timeout, errcode)
+function pull_sample(inlet::StreamInlet{T}; timeout = LSL_FOREVER) where T
+  data = Vector{T}(undef, channel_count(inlet.info))
+  return pull_sample!(data, inlet, timeout=timeout)
+end
+
+"""
+    pull_sample!(data::Vector{T}, inlet::StreamInfo; timeout = LSL_FOREVER)
+
+Pull a sample from the inlet and assign to provided vector.
+
+Function may throw timeout error, lost error if the stream has been lost. Note that if a
+timeout occurrs, or if a timeout of 0.0 is specified an no new sample is available, the 
+timestamp will be 0.0.
+
+# Keyword arguments
+`timeout::Number`: timeout to acquire the sample.
+"""
+function pull_sample!(data::Vector{T}, inlet::StreamInlet{T}; timeout = LSL_FOREVER) where T
+  length(data) == channel_count(inlet.info) || error("data length ≂̸ channel count")
+  errcode = Ref{Int32}(0); 
+  timestamp = lsl_pull_sample(inlet, data, timeout, errcode)
   handle_error(errcode[])
   return timestamp, data
 end
 
-function pull_sample(inlet::StreamInlet{Float64}; timeout = LSL_FOREVER)
-  data = Vector{Float64}(undef, channel_count(inlet.info))
-  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
-  timestamp = lsl_pull_sample_d(inlet, data, length(data), timeout, errcode)
-  handle_error(errcode[])
-  return timestamp, data
-end
+#
+# Pull chunks
+#
 
-function pull_sample(inlet::StreamInlet{Clong}; timeout = LSL_FOREVER)
-  data = Vector{Clong}(undef, channel_count(inlet.info))
-  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
-  timestamp = lsl_pull_sample_l(inlet, data, length(data), timeout, errcode)
-  handle_error(errcode[])
-  return timestamp, data
-end
+# Type mapping
+_lsl_pull_chunk(i, d::Vector{Float32}, ts, to, ec) = lsl_pull_sample_f(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::Vector{Float64}, ts, to, ec) = lsl_pull_sample_d(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::Vector{Clong},   ts, to, ec) = lsl_pull_sample_l(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::Vector{Int32},   ts, to, ec) = lsl_pull_sample_i(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::Vector{Int16},   ts, to, ec) = lsl_pull_sample_s(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::Vector{Cchar},   ts, to, ec) = lsl_pull_sample_c(i, d, ts, length(d), length(ts), to, ec)
 
-function pull_sample(inlet::StreamInlet{Int32}; timeout = LSL_FOREVER)
-  data = Vector{Int32}(undef, channel_count(inlet.info))
-  errcode = Ref{Int32}(0) # Ref{lsl_error_code_t}(lsl_error_code_t(0))
-  timestamp = lsl_pull_sample_i(inlet, data, length(data), timeout, errcode)
-  handle_error(errcode[])
-  return timestamp, data
-end
+"""
+    pull_chunk(inlet::StreamInfo; max_samples = 1024, timeout = LSL_FOREVER)
 
-function pull_sample(inlet::StreamInlet{Int16}; timeout = LSL_FOREVER)
-  data = Vector{Int16}(undef, channel_count(inlet.info))
-  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
-  timestamp = lsl_pull_sample_s(inlet, data, length(data), timeout, errcode)
-  handle_error(errcode[])
-  return timestamp, data
-end
+Pull a chunk of data from the inlet and assign to provided matrix.
 
-function pull_sample(inlet::StreamInlet{Cchar}; timeout = LSL_FOREVER)
-  data = Vector{Cchar}(undef, channel_count(inlet.info))
-  errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
-  timestamp = lsl_pull_sample_c(inlet, data, length(data), timeout, errcode)
-  handle_error(errcode[])
+Function returns a vector of timestamps of length N, being <= `max_samples` alongside a 
+matrix of data where each column consists of a sample such that size(data) = (M,N)
+
+Function may throw timeout error, lost error if the stream has been lost. Note that if a
+timeout occurrs, or if a timeout of 0.0 is specified an no new sample is available, the 
+timestamp will be 0.0.
+
+# Keyword arguments
+`timeout::Number`: timeout to acquire the sample.
+"""
+function pull_chunk(inlet::StreamInlet{T}; max_samples = 1024, timeout = LSL_FOREVER) where T
+  data = zeros(T, channel_count(inlet.info), max_samples)
+  timestamps = zeros(Float64, max_samples)
+  errcode = Ref{Int32}(0); 
+  timestamp = _lsl_pull_chunk(inlet, data, timestamps, timeout, errcode)
+  ns = handle_error(errcode[])
+  resize!(data, :, ns)
+  resize!(timestamps, ns)
   return timestamp, data
 end
 

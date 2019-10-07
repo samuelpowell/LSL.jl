@@ -68,6 +68,7 @@ end
 # Push sample
 #
 
+# Type mappings
 const _lsl_typestring_map = Dict{DataType, String}(Float32 => "f",
                                                    Float64 => "d",
                                                    Clong => "l",
@@ -76,6 +77,15 @@ const _lsl_typestring_map = Dict{DataType, String}(Float32 => "f",
                                                    Cchar => "c",
                                                    String => "str",
                                                    Cvoid => "v")
+
+_lsl_push_sample_tp(o, d::Vector{Float32}, ts, pt)  = lsl_push_sample_ftp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Float64}, ts, pt)  = lsl_push_sample_dtp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Clong}, ts, pt)    = lsl_push_sample_ltp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Int32}, ts, pt)    = lsl_push_sample_itp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Int16}, ts, pt)    = lsl_push_sample_stp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Cchar}, ts, pt)    = lsl_push_sample_ctp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Cvoid}, ts, pt)    = lsl_push_sample_vtp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{String}, ts, pt)   = lsl_push_sample_strtp(o, d, ts, pt)
 
  """
     push_sample(outlet::StreamOutlet{T},
@@ -92,84 +102,136 @@ Push a sample into the outlet. Each entry in the vector corresponds to one chann
                        buffering it with subsequent samples. Note that the chunk_size, if
                        specified at outlet construction, takes precedence over the
                        pushthrough flag.
-"""                                
-function push_sample(outlet::StreamOutlet{Float32},
-                     data::Vector{Float32};
+""" 
+function push_sample(outlet::StreamOutlet{T},
+                     data::Vector{T};
                      timestamp = 0.0,
-                     pushthrough = true) 
+                     pushthrough = true) where T
 
   length(data) == channel_count(outlet.info) || error("data length ≂̸ channel count")
-  handle_error(lsl_push_sample_ftp(outlet, data, timestamp, pushthrough))
+  handle_error(_lsl_push_sample_tp(outlet, data, timestamp, pushthrough))
 end
-
-function push_sample(outlet::StreamOutlet{Float64},
-                     data::Vector{Float64};
-                     timestamp = 0.0,
-                     pushthrough = true) 
-
-  length(data) == channel_count(outlet.info) || error("data length ≂̸ channel count")
-  handle_error(lsl_push_sample_dtp(outlet, data, timestamp, pushthrough))
-end
-
-function push_sample(outlet::StreamOutlet{Clong},
-                     data::Vector{Clong};
-                     timestamp = 0.0,
-                     pushthrough = true) 
-
-  length(data) == channel_count(outlet.info) || error("data length ≂̸ channel count")
-  handle_error(lsl_push_sample_ltp(outlet, data, timestamp, pushthrough))
-end
-
-function push_sample(outlet::StreamOutlet{Int32},
-                     data::Vector{Int32};
-                     timestamp = 0.0,
-                     pushthrough = true) 
-
-  length(data) == channel_count(outlet.info) || error("data length ≂̸ channel count")
-  handle_error(lsl_push_sample_itp(outlet, data, timestamp, pushthrough))
-end
-
-function push_sample(outlet::StreamOutlet{Int16},
-                     data::Vector{Int16};
-                     timestamp = 0.0,
-                     pushthrough = true) 
-
-  length(data) == channel_count(outlet.info) || error("data length ≂̸ channel count")
-  handle_error(lsl_push_sample_stp(outlet, data, timestamp, pushthrough))
-end
-
-function push_sample(outlet::StreamOutlet{Cchar},
-                     data::Vector{Cchar};
-                     timestamp = 0.0,
-                     pushthrough = true) 
-
-  length(data) == channel_count(outlet.info) || error("data length ≂̸ channel count")
-  handle_error(lsl_push_sample_ctp(outlet, data, timestamp, pushthrough))
-end
-
-function push_sample(outlet::StreamOutlet{String},
-                     data::Vector{String};
-                     timestamp = 0.0,
-                     pushthrough = true) 
-
-  length(data) == channel_count(outlet.info) || error("data length ≂̸ channel count")
-  handle_error(lsl_push_sample_strtp(outlet, data, timestamp, pushthrough))
-end
-
-function push_sample(outlet::StreamOutlet{Cvoid},
-                     data::Vector{Cvoid};
-                     timestamp = 0.0,
-                     pushthrough = true) 
-
-  length(data) == channel_count(outlet.info) || error("data length ≂̸ channel count")
-  handle_error(lsl_push_sample_vtp(outlet, data, timestamp, pushthrough))
-end
-
 
 #
 # Push chunk
 #
 
+# Type mappings
+_lsl_push_chunk_tp(o, d::Vector{Float32}, ts::Number, pt) = lsl_push_chunk_ftp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Vector{Float64}, ts::Number, pt) = lsl_push_chunk_dtp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Vector{Clong}, ts::Number, pt)   = lsl_push_chunk_ltp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Vector{Int32}, ts::Number, pt)   = lsl_push_chunk_itp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Vector{Int16}, ts::Number, pt)   = lsl_push_chunk_stp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Vector{Cchar}, ts::Number, pt)   = lsl_push_chunk_ctp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Vector{Cvoid}, ts::Number, pt)   = lsl_push_chunk_vtp(o, d, length(d), ts, pt)
+#_lsl_push_chunk_tp(o, d::Vector{String}, ts::Number, pt)  = lsl_push_chunk_strtp(o, d, length(d), ts, pt)
+
+_lsl_push_chunk_tnp(o, d::Vector{Float32}, ts::Vector, pt) = lsl_push_chunk_ftnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Vector{Float64}, ts::Vector, pt) = lsl_push_chunk_dtnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Vector{Clong}, ts::Vector, pt)   = lsl_push_chunk_ltnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Vector{Int32}, ts::Vector, pt)   = lsl_push_chunk_itnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Vector{Int16}, ts::Vector, pt)   = lsl_push_chunk_stnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Vector{Cchar}, ts::Vector, pt)   = lsl_push_chunk_ctnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Vector{Cvoid}, ts::Vector, pt)   = lsl_push_chunk_vtnp(o, d, length(d), ts, pt)
+#_lsl_push_chunk_tnp(o, d::Vector{String}, ts::Vector, pt)  = lsl_push_chunk_strtnp(o, d, length(d), ts, pt)
+
+"""
+push_chunk(outlet::StreamOutlet{T},
+           data::Matrix{T};
+           timestamp = 0.0,
+           pushthrough = true)
+            
+Push a chunk of samples into the outlet.
+
+Each sample consists of the column of the matrix `data` such that size(data) = (M,N) where
+M is the channel count of the outlet, and N is the number of samples in the chunk.
+
+# Keyword arguments      
+-`timestamp::Number`: Capture time of the sample, in agreement with `local_clock()`, if
+                  ommitted, the current time is used.
+- `passthrough::Bool`: Whether to push the sample through to the receivers instead of
+                   buffering it with subsequent samples. Note that the chunk_size, if
+                   specified at outlet construction, takes precedence over the
+                   pushthrough flag.
+""" 
+function push_chunk(outlet::StreamOutlet{T},
+                     data::Matrix{T};
+                     timestamp = 0.0,
+                     pushthrough = true) where T
+
+  size(data,1) == channel_count(outlet.info) || error("data length ≂̸ channel count")
+  handle_error(_lsl_push_chunk_tp(outlet, data, timestamp, pushthrough))
+end
+
+"""
+push_chunk(outlet::StreamOutlet{T},
+           data::Matrix{T},
+           timestamp::Vector{Float64};
+           pushthrough = true)
+            
+Push a chunk of samples into the outlet with individual timestamps.
+
+Each sample consists of the column of the matrix `data` such that size(data) = (M,N) where
+M is the channel count of the outlet, and N is the number of samples in the chunk.
+
+# Arguments
+-`timestamps`: Capture time of the sample, in agreement with `local_clock()`, if ommitted,
+               the current time is used.
+
+# Keyword arguments      
+-`passthrough::Bool`: Whether to push the sample through to the receivers instead of
+                      buffering it with subsequent samples. Note that the chunk_size, if
+                      specified at outlet construction, takes precedence over the
+                      pushthrough flag.
+""" 
+function push_chunk(outlet::StreamOutlet{T},
+                     data::Matrix{T},
+                     timestamp::Vector{T};
+                     pushthrough = true) where T
+
+  size(data,1) == length(timestamp) || error("number of timestamps != channel_count")
+  size(data,1) == channel_count(outlet.info) || error("data length ≂̸ channel count")
+  handle_error(_lsl_push_chunk_tnp(outlet, data, timestamp, pushthrough))
+end
+
+
+# """
+# push_chunk(outlet::StreamOutlet{T},
+#            data::Vector{Vector{T}};
+#            timestamp = 0.0,
+#            pushthrough = true)
+            
+# Push a vector of samples into the outlet. 
+
+# Each entry in the vector corresponds sample, and each entry in the underlying vector
+# corresponds to one channel.
+
+# Note that this function must allocate a new vector to concatenate the individual samples, it
+# is preferable to specify the chunks as a matrix of N columns, where there are N samples in 
+# the chunk.
+
+# # Keyword arguments      
+# -`timestamp::Number`: Capture time of the most recent sample, in agreement with
+#                       local_clock(); if omitted, the current time is used. The time stamps
+#                       of other samples are automatically derived according to the sampling
+#                       rate of the stream.
+# - `passthrough::Bool`: Whether to push the sample through to the receivers instead of
+#                        buffering it with subsequent samples. Note that the chunk_size, if
+#                        specified at outlet construction, takes precedence over the
+#                        pushthrough flag.
+# """ 
+# function push_chunk(outlet::StreamOutlet{T},
+#                     data::Vector{Vector{T}};
+#                     timestamp = 0.0,
+#                     pushthrough = true) where T
+
+#   # Check all samples are the same, and the correct length
+#   if !all(length(d) == channel_count(outlet.info) for d in data)
+#     error("at least one data length ≂̸ channel count")
+#   end
+#   dmat = hcat(data...)
+#   push_chunk(outlet, dmat, timestamp = timestamp, passthrough = passthrough)
+# end
 
 #
 # Utility functions
