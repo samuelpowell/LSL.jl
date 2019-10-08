@@ -29,8 +29,8 @@ download_info = Dict(
     #FreeBSD(:x86_64)        => ("$bin_prefix/libfoo.x86_64-unknown-freebsd11.1.tar.gz", "5f6edd6247b3685fa5c42c98a53d2a3e1eef6242c2bb3cdbb5fe23f538703fe4"),
     MacOS(:x86_64)          => ("$bin_prefix/liblsl-1.13.0-OSX64.tar.bz2", "1b2ef56042b23054148f39442692e7aad3f9a211541550cd87499718815c8e52"),
     
-    Windows(:i686)          => ("$bin_prefix/liblsl-1.13.0-Win32.7z", "8ecccbc117e34b0ce2f45f3c51d224ab36dbbf943f83a53d3d263ecf55f44910"),
-    Windows(:x86_64)        => ("$bin_prefix/liblsl-1.13.0-Win64.7z", "7f8939e9529835b83810d3ae7e2556f6e002d571f619894e54ece42ea5262b7f"),
+    Windows(:i686)          => ("$bin_prefix/liblsl-1.13.0-Win32.7z", "459fce862915d88bd90783a11989849210f097e51d62189f7a1388da519a6408"),
+    Windows(:x86_64)        => ("$bin_prefix/liblsl-1.13.0-Win64.7z", "8ecccbc117e34b0ce2f45f3c51d224ab36dbbf943f83a53d3d263ecf55f44910"),
 )
 # First, check to see if we're all satisfied
 if any(!satisfied(p; verbose=verbose) for p in products)
