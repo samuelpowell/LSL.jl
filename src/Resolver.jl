@@ -184,7 +184,7 @@ Returns a vector of matching StreamInfo objects (with empty desc field), any of 
 subsequently be used to open an inlet.
 
 # Argumennts:
--`predicate::String`: Predicate string, e.g. "name='BioSemi'" or "type='EEG'" and
+-`predicate::String`: Predicate string, e.g. "name='BioSemi'" or "type='EEG' and
                      starts-with(name,'BioSemi') and count(description/desc/channels/channel)=32"
 
 # Keyword arguments

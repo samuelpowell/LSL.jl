@@ -2,7 +2,6 @@
 # Copyright (C) 2019 Samuel Powell
 
 # LSL.jl: main module definition
-
 module LSL
 
 using Libdl
