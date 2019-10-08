@@ -4,7 +4,7 @@
 # StreamInlet.jl: type and method definitions for steam inlet
 
 export StreamInlet
-export open_stream, close_stream, set_postprocessing, pull_sample, pull_sample!
+export open_stream, close_stream, set_postprocessing, pull_sample, pull_sample!, pull_chunk
 export was_clock_reset, smoothing_halftime, samples_available
 
 mutable struct StreamInlet{T}
@@ -171,12 +171,12 @@ end
 #
 
 # Type mapping
-_lsl_pull_sample(inlet, data::Vector{Float32}, timeout, errcode) = lsl_pull_sample_f(inlet, data, length(data), timeout, errcode)
-_lsl_pull_sample(inlet, data::Vector{Float64}, timeout, errcode) = lsl_pull_sample_d(inlet, data, length(data), timeout, errcode)
-_lsl_pull_sample(inlet, data::Vector{Clong}, timeout, errcode) = lsl_pull_sample_l(inlet, data, length(data), timeout, errcode)
-_lsl_pull_sample(inlet, data::Vector{Int32}, timeout, errcode) = lsl_pull_sample_i(inlet, data, length(data), timeout, errcode)
-_lsl_pull_sample(inlet, data::Vector{Int16}, timeout, errcode) = lsl_pull_sample_s(inlet, data, length(data), timeout, errcode)
-_lsl_pull_sample(inlet, data::Vector{Cchar}, timeout, errcode) = lsl_pull_sample_c(inlet, data, length(data), timeout, errcode)
+_lsl_pull_sample(i, d::Vector{Float32}, to, ec) = lsl_pull_sample_f(i, d, length(d), to, ec)
+_lsl_pull_sample(i, d::Vector{Float64}, to, ec) = lsl_pull_sample_d(i, d, length(d), to, ec)
+_lsl_pull_sample(i, d::Vector{Clong},   to, ec) = lsl_pull_sample_l(i, d, length(d), to, ec)
+_lsl_pull_sample(i, d::Vector{Int32},   to, ec) = lsl_pull_sample_i(i, d, length(d), to, ec)
+_lsl_pull_sample(i, d::Vector{Int16},   to, ec) = lsl_pull_sample_s(i, d, length(d), to, ec)
+_lsl_pull_sample(i, d::Vector{Cchar},   to, ec) = lsl_pull_sample_c(i, d, length(d), to, ec)
 
 """
     pull_sample(inlet::StreamInfo; timeout = LSL_FOREVER)
@@ -210,7 +210,7 @@ timestamp will be 0.0.
 function pull_sample!(data::Vector{T}, inlet::StreamInlet{T}; timeout = LSL_FOREVER) where T
   length(data) == channel_count(inlet.info) || error("data length ≂̸ channel count")
   errcode = Ref{Int32}(0); 
-  timestamp = lsl_pull_sample(inlet, data, timeout, errcode)
+  timestamp = _lsl_pull_sample(inlet, data, timeout, errcode)
   handle_error(errcode[])
   return timestamp, data
 end
@@ -220,12 +220,12 @@ end
 #
 
 # Type mapping
-_lsl_pull_chunk(i, d::Vector{Float32}, ts, to, ec) = lsl_pull_sample_f(i, d, ts, length(d), length(ts), to, ec)
-_lsl_pull_chunk(i, d::Vector{Float64}, ts, to, ec) = lsl_pull_sample_d(i, d, ts, length(d), length(ts), to, ec)
-_lsl_pull_chunk(i, d::Vector{Clong},   ts, to, ec) = lsl_pull_sample_l(i, d, ts, length(d), length(ts), to, ec)
-_lsl_pull_chunk(i, d::Vector{Int32},   ts, to, ec) = lsl_pull_sample_i(i, d, ts, length(d), length(ts), to, ec)
-_lsl_pull_chunk(i, d::Vector{Int16},   ts, to, ec) = lsl_pull_sample_s(i, d, ts, length(d), length(ts), to, ec)
-_lsl_pull_chunk(i, d::Vector{Cchar},   ts, to, ec) = lsl_pull_sample_c(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Float32}, ts, to, ec) = lsl_pull_chunk_f(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Float64}, ts, to, ec) = lsl_pull_chunk_d(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Clong},   ts, to, ec) = lsl_pull_chunk_l(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Int32},   ts, to, ec) = lsl_pull_chunk_i(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Int16},   ts, to, ec) = lsl_pull_chunk_s(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Cchar},   ts, to, ec) = lsl_pull_chunk_c(i, d, ts, length(d), length(ts), to, ec)
 
 """
     pull_chunk(inlet::StreamInfo; max_samples = 1024, timeout = LSL_FOREVER)
@@ -243,14 +243,21 @@ timestamp will be 0.0.
 `timeout::Number`: timeout to acquire the sample.
 """
 function pull_chunk(inlet::StreamInlet{T}; max_samples = 1024, timeout = LSL_FOREVER) where T
-  data = zeros(T, channel_count(inlet.info), max_samples)
+  slen = Int(channel_count(inlet.info))
+  data = zeros(T, slen * max_samples)
   timestamps = zeros(Float64, max_samples)
   errcode = Ref{Int32}(0); 
-  timestamp = _lsl_pull_chunk(inlet, data, timestamps, timeout, errcode)
-  ns = handle_error(errcode[])
-  resize!(data, :, ns)
-  resize!(timestamps, ns)
-  return timestamp, data
+
+  # Pull the chunk, getting the number of individual sample elements, form number of chunks
+  dlen = Int(_lsl_pull_chunk(inlet, data, timestamps, timeout, errcode))
+  clen = Int(dlen ÷ channel_count(inlet.info))
+  handle_error(errcode[])
+
+  # Shrink data and timestamp vector to output length, reshape data to matrix
+  resize!(data, dlen)
+  data = reshape(data, slen, clen) 
+  resize!(timestamps, clen)
+  return timestamps, data
 end
 
 #

@@ -36,3 +36,6 @@ info = StreamInfo(name="testname",
 outlet = StreamOutlet(info)
 
 end
+
+include("sample.jl")
+include("chunk.jl")

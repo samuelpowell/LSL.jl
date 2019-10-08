@@ -146,7 +146,7 @@ function lsl_push_sample_s(out, data)
 end
 
 function lsl_push_sample_c(out, data)
-    ccall((:lsl_push_sample_c, liblsl), Int32, (lsl_outlet, Cstring), out, data)
+    ccall((:lsl_push_sample_c, liblsl), Int32, (lsl_outlet, Ptr{Cchar}), out, data)
 end
 
 function lsl_push_sample_v(out, data)
@@ -174,7 +174,7 @@ function lsl_push_sample_st(out, data, timestamp)
 end
 
 function lsl_push_sample_ct(out, data, timestamp)
-    ccall((:lsl_push_sample_ct, liblsl), Int32, (lsl_outlet, Cstring, Cdouble), out, data, timestamp)
+    ccall((:lsl_push_sample_ct, liblsl), Int32, (lsl_outlet, Ptr{Cchar}, Cdouble), out, data, timestamp)
 end
 
 function lsl_push_sample_vt(out, data, timestamp)
@@ -202,7 +202,7 @@ function lsl_push_sample_stp(out, data, timestamp, pushthrough)
 end
 
 function lsl_push_sample_ctp(out, data, timestamp, pushthrough)
-    ccall((:lsl_push_sample_ctp, liblsl), Int32, (lsl_outlet, Cstring, Cdouble, Int32), out, data, timestamp, pushthrough)
+    ccall((:lsl_push_sample_ctp, liblsl), Int32, (lsl_outlet, Ptr{Cchar}, Cdouble, Int32), out, data, timestamp, pushthrough)
 end
 
 function lsl_push_sample_strtp(out, data, timestamp, pushthrough)
@@ -246,7 +246,7 @@ function lsl_push_chunk_s(out, data, data_elements)
 end
 
 function lsl_push_chunk_c(out, data, data_elements)
-    ccall((:lsl_push_chunk_c, liblsl), Int32, (lsl_outlet, Cstring, Culong), out, data, data_elements)
+    ccall((:lsl_push_chunk_c, liblsl), Int32, (lsl_outlet, Ptr{Cchar}, Culong), out, data, data_elements)
 end
 
 function lsl_push_chunk_ft(out, data, data_elements, timestamp)
@@ -270,7 +270,7 @@ function lsl_push_chunk_st(out, data, data_elements, timestamp)
 end
 
 function lsl_push_chunk_ct(out, data, data_elements, timestamp)
-    ccall((:lsl_push_chunk_ct, liblsl), Int32, (lsl_outlet, Cstring, Culong, Cdouble), out, data, data_elements, timestamp)
+    ccall((:lsl_push_chunk_ct, liblsl), Int32, (lsl_outlet, Ptr{Cchar}, Culong, Cdouble), out, data, data_elements, timestamp)
 end
 
 function lsl_push_chunk_strt(out, data, data_elements, timestamp)
@@ -298,7 +298,7 @@ function lsl_push_chunk_stp(out, data, data_elements, timestamp, pushthrough)
 end
 
 function lsl_push_chunk_ctp(out, data, data_elements, timestamp, pushthrough)
-    ccall((:lsl_push_chunk_ctp, liblsl), Int32, (lsl_outlet, Cstring, Culong, Cdouble, Int32), out, data, data_elements, timestamp, pushthrough)
+    ccall((:lsl_push_chunk_ctp, liblsl), Int32, (lsl_outlet, Ptr{Cchar}, Culong, Cdouble, Int32), out, data, data_elements, timestamp, pushthrough)
 end
 
 function lsl_push_chunk_strtp(out, data, data_elements, timestamp, pushthrough)
@@ -326,7 +326,7 @@ function lsl_push_chunk_stn(out, data, data_elements, timestamps)
 end
 
 function lsl_push_chunk_ctn(out, data, data_elements, timestamps)
-    ccall((:lsl_push_chunk_ctn, liblsl), Int32, (lsl_outlet, Cstring, Culong, Ptr{Cdouble}), out, data, data_elements, timestamps)
+    ccall((:lsl_push_chunk_ctn, liblsl), Int32, (lsl_outlet, Ptr{Cchar}, Culong, Ptr{Cdouble}), out, data, data_elements, timestamps)
 end
 
 function lsl_push_chunk_strtn(out, data, data_elements, timestamps)
@@ -354,7 +354,7 @@ function lsl_push_chunk_stnp(out, data, data_elements, timestamps, pushthrough)
 end
 
 function lsl_push_chunk_ctnp(out, data, data_elements, timestamps, pushthrough)
-    ccall((:lsl_push_chunk_ctnp, liblsl), Int32, (lsl_outlet, Cstring, Culong, Ptr{Cdouble}, Int32), out, data, data_elements, timestamps, pushthrough)
+    ccall((:lsl_push_chunk_ctnp, liblsl), Int32, (lsl_outlet, Ptr{Cchar}, Culong, Ptr{Cdouble}, Int32), out, data, data_elements, timestamps, pushthrough)
 end
 
 function lsl_push_chunk_strtnp(out, data, data_elements, timestamps, pushthrough)
@@ -446,7 +446,7 @@ function lsl_pull_sample_s(in, buffer, buffer_elements, timeout, ec)
 end
 
 function lsl_pull_sample_c(in, buffer, buffer_elements, timeout, ec)
-    ccall((:lsl_pull_sample_c, liblsl), Cdouble, (lsl_inlet, Cstring, Int32, Cdouble, Ptr{Int32}), in, buffer, buffer_elements, timeout, ec)
+    ccall((:lsl_pull_sample_c, liblsl), Cdouble, (lsl_inlet, Ptr{Cchar}, Int32, Cdouble, Ptr{Int32}), in, buffer, buffer_elements, timeout, ec)
 end
 
 function lsl_pull_sample_str(in, buffer, buffer_elements, timeout, ec)
@@ -482,7 +482,7 @@ function lsl_pull_chunk_s(in, data_buffer, timestamp_buffer, data_buffer_element
 end
 
 function lsl_pull_chunk_c(in, data_buffer, timestamp_buffer, data_buffer_elements, timestamp_buffer_elements, timeout, ec)
-    ccall((:lsl_pull_chunk_c, liblsl), Culong, (lsl_inlet, Cstring, Ptr{Cdouble}, Culong, Culong, Cdouble, Ptr{Int32}), in, data_buffer, timestamp_buffer, data_buffer_elements, timestamp_buffer_elements, timeout, ec)
+    ccall((:lsl_pull_chunk_c, liblsl), Culong, (lsl_inlet, Ptr{Cchar}, Ptr{Cdouble}, Culong, Culong, Cdouble, Ptr{Int32}), in, data_buffer, timestamp_buffer, data_buffer_elements, timestamp_buffer_elements, timeout, ec)
 end
 
 function lsl_pull_chunk_str(in, data_buffer, timestamp_buffer, data_buffer_elements, timestamp_buffer_elements, timeout, ec)

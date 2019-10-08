@@ -117,22 +117,22 @@ end
 #
 
 # Type mappings
-_lsl_push_chunk_tp(o, d::Vector{Float32}, ts::Number, pt) = lsl_push_chunk_ftp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Vector{Float64}, ts::Number, pt) = lsl_push_chunk_dtp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Vector{Clong}, ts::Number, pt)   = lsl_push_chunk_ltp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Vector{Int32}, ts::Number, pt)   = lsl_push_chunk_itp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Vector{Int16}, ts::Number, pt)   = lsl_push_chunk_stp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Vector{Cchar}, ts::Number, pt)   = lsl_push_chunk_ctp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Vector{Cvoid}, ts::Number, pt)   = lsl_push_chunk_vtp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Float32}, ts::Number, pt) = lsl_push_chunk_ftp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Float64}, ts::Number, pt) = lsl_push_chunk_dtp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Clong}, ts::Number, pt)   = lsl_push_chunk_ltp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Int32}, ts::Number, pt)   = lsl_push_chunk_itp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Int16}, ts::Number, pt)   = lsl_push_chunk_stp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Cchar}, ts::Number, pt)   = lsl_push_chunk_ctp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Cvoid}, ts::Number, pt)   = lsl_push_chunk_vtp(o, d, length(d), ts, pt)
 #_lsl_push_chunk_tp(o, d::Vector{String}, ts::Number, pt)  = lsl_push_chunk_strtp(o, d, length(d), ts, pt)
 
-_lsl_push_chunk_tnp(o, d::Vector{Float32}, ts::Vector, pt) = lsl_push_chunk_ftnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Vector{Float64}, ts::Vector, pt) = lsl_push_chunk_dtnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Vector{Clong}, ts::Vector, pt)   = lsl_push_chunk_ltnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Vector{Int32}, ts::Vector, pt)   = lsl_push_chunk_itnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Vector{Int16}, ts::Vector, pt)   = lsl_push_chunk_stnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Vector{Cchar}, ts::Vector, pt)   = lsl_push_chunk_ctnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Vector{Cvoid}, ts::Vector, pt)   = lsl_push_chunk_vtnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Float32}, ts::Vector, pt) = lsl_push_chunk_ftnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Float64}, ts::Vector, pt) = lsl_push_chunk_dtnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Clong}, ts::Vector, pt)   = lsl_push_chunk_ltnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Int32}, ts::Vector, pt)   = lsl_push_chunk_itnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Int16}, ts::Vector, pt)   = lsl_push_chunk_stnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Cchar}, ts::Vector, pt)   = lsl_push_chunk_ctnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Cvoid}, ts::Vector, pt)   = lsl_push_chunk_vtnp(o, d, length(d), ts, pt)
 #_lsl_push_chunk_tnp(o, d::Vector{String}, ts::Vector, pt)  = lsl_push_chunk_strtnp(o, d, length(d), ts, pt)
 
 """
@@ -186,10 +186,10 @@ M is the channel count of the outlet, and N is the number of samples in the chun
 """ 
 function push_chunk(outlet::StreamOutlet{T},
                      data::Matrix{T},
-                     timestamp::Vector{T};
+                     timestamp::Vector;
                      pushthrough = true) where T
 
-  size(data,1) == length(timestamp) || error("number of timestamps != channel_count")
+  size(data,2) == length(timestamp) || error("number of timestamps != chunk_count")
   size(data,1) == channel_count(outlet.info) || error("data length ≂̸ channel count")
   handle_error(_lsl_push_chunk_tnp(outlet, data, timestamp, pushthrough))
 end
