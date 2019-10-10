@@ -3,7 +3,7 @@ using BinaryProvider # requires BinaryProvider 0.3.0 or later
 # Parse some basic command-line arguments
 const verbose = "--verbose" in ARGS
 const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__DIR__, "usr")))
-const dirfix = Sys.iswindows ? joinpath(@__DIR__, "usr", "lib") : joinpath(@__DIR__, "usr")
+const dirfix = (Sys.iswindows() && Sys.WORD_SIZE == 64) ? joinpath(@__DIR__, "usr", "lib") : joinpath(@__DIR__, "usr")
 products = [
     LibraryProduct(dirfix, ["liblsl", "liblsl64", "liblsl32"], :liblsl),
 ]
@@ -19,7 +19,7 @@ download_info = Dict(
     Linux(:armv7l, libc=:musl, call_abi=:eabihf) => ("$bin_prefix/liblsl.v1.13.0-b13.arm-linux-musleabihf.tar.gz", "33358a73b71c34f0c8fe21b5c701169de1bbf4305357efb97270c0eea4f12d10"),
     Linux(:i686, libc=:glibc) => ("$bin_prefix/liblsl.v1.13.0-b13.i686-linux-gnu.tar.gz", "5019a298d6f3fd1f36eb9a200a721ad29cc83b9697df707061e820dcba224460"),
     Linux(:i686, libc=:musl) => ("$bin_prefix/liblsl.v1.13.0-b13.i686-linux-musl.tar.gz", "4960c3a3ec498fc3e1dc855687f78dcb7330284b0db3c2329b9b921e1360c369"),
-    Windows(:i686) => ("https://github.com/sccn/liblsl/releases/download/1.13.0-b13/liblsl-1.13.0-Win32.7z", "b2323a2fe16b2f061a4330573e41394f7cf1d09d54c0ce4f689f93f32085f41e"),
+    Windows(:i686) => ("$bin_prefix/liblsl.v1.13.0-b13.i686-w64-mingw32.tar.gz", "b2323a2fe16b2f061a4330573e41394f7cf1d09d54c0ce4f689f93f32085f41e"),
     Linux(:powerpc64le, libc=:glibc) => ("$bin_prefix/liblsl.v1.13.0-b13.powerpc64le-linux-gnu.tar.gz", "279f3460c90b01d0db68058af7c69e59c623b57136da14229dfcc237be443b92"),
     MacOS(:x86_64) => ("$bin_prefix/liblsl.v1.13.0-b13.x86_64-apple-darwin14.tar.gz", "ef3f353ee80856d47178b5a9aff579cae66bcb81381300cda3d59b79c1e4e3d8"),
     Linux(:x86_64, libc=:glibc) => ("$bin_prefix/liblsl.v1.13.0-b13.x86_64-linux-gnu.tar.gz", "65e5d90fdc40024f404f553fcb49a285cceb27297c6b93482719a016460b6375"),
