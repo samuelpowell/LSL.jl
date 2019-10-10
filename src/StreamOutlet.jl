@@ -80,7 +80,9 @@ const _lsl_typestring_map = Dict{DataType, String}(Float32 => "f",
 
 _lsl_push_sample_tp(o, d::Vector{Float32}, ts, pt)  = lsl_push_sample_ftp(o, d, ts, pt)
 _lsl_push_sample_tp(o, d::Vector{Float64}, ts, pt)  = lsl_push_sample_dtp(o, d, ts, pt)
-_lsl_push_sample_tp(o, d::Vector{Clong}, ts, pt)    = lsl_push_sample_ltp(o, d, ts, pt)
+@static if !Sys.iswindows() && Sys.WORD_SIZE == 64
+  _lsl_push_sample_tp(o, d::Vector{Clong}, ts, pt)    = lsl_push_sample_ltp(o, d, ts, pt)
+end
 _lsl_push_sample_tp(o, d::Vector{Int32}, ts, pt)    = lsl_push_sample_itp(o, d, ts, pt)
 _lsl_push_sample_tp(o, d::Vector{Int16}, ts, pt)    = lsl_push_sample_stp(o, d, ts, pt)
 _lsl_push_sample_tp(o, d::Vector{Cchar}, ts, pt)    = lsl_push_sample_ctp(o, d, ts, pt)
@@ -119,7 +121,9 @@ end
 # Type mappings
 _lsl_push_chunk_tp(o, d::Matrix{Float32}, ts::Number, pt) = lsl_push_chunk_ftp(o, d, length(d), ts, pt)
 _lsl_push_chunk_tp(o, d::Matrix{Float64}, ts::Number, pt) = lsl_push_chunk_dtp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Matrix{Clong}, ts::Number, pt)   = lsl_push_chunk_ltp(o, d, length(d), ts, pt)
+@static if !Sys.iswindows() && Sys.WORD_SIZE == 64
+  _lsl_push_chunk_tp(o, d::Matrix{Clong}, ts::Number, pt)   = lsl_push_chunk_ltp(o, d, length(d), ts, pt)
+end
 _lsl_push_chunk_tp(o, d::Matrix{Int32}, ts::Number, pt)   = lsl_push_chunk_itp(o, d, length(d), ts, pt)
 _lsl_push_chunk_tp(o, d::Matrix{Int16}, ts::Number, pt)   = lsl_push_chunk_stp(o, d, length(d), ts, pt)
 _lsl_push_chunk_tp(o, d::Matrix{Cchar}, ts::Number, pt)   = lsl_push_chunk_ctp(o, d, length(d), ts, pt)
@@ -128,7 +132,9 @@ _lsl_push_chunk_tp(o, d::Matrix{Cvoid}, ts::Number, pt)   = lsl_push_chunk_vtp(o
 
 _lsl_push_chunk_tnp(o, d::Matrix{Float32}, ts::Vector, pt) = lsl_push_chunk_ftnp(o, d, length(d), ts, pt)
 _lsl_push_chunk_tnp(o, d::Matrix{Float64}, ts::Vector, pt) = lsl_push_chunk_dtnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Matrix{Clong}, ts::Vector, pt)   = lsl_push_chunk_ltnp(o, d, length(d), ts, pt)
+@static if !Sys.iswindows() && Sys.WORD_SIZE == 64
+  _lsl_push_chunk_tnp(o, d::Matrix{Clong}, ts::Vector, pt)   = lsl_push_chunk_ltnp(o, d, length(d), ts, pt)
+end
 _lsl_push_chunk_tnp(o, d::Matrix{Int32}, ts::Vector, pt)   = lsl_push_chunk_itnp(o, d, length(d), ts, pt)
 _lsl_push_chunk_tnp(o, d::Matrix{Int16}, ts::Vector, pt)   = lsl_push_chunk_stnp(o, d, length(d), ts, pt)
 _lsl_push_chunk_tnp(o, d::Matrix{Cchar}, ts::Vector, pt)   = lsl_push_chunk_ctnp(o, d, length(d), ts, pt)

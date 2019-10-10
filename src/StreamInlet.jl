@@ -173,7 +173,9 @@ end
 # Type mapping
 _lsl_pull_sample(i, d::Vector{Float32}, to, ec) = lsl_pull_sample_f(i, d, length(d), to, ec)
 _lsl_pull_sample(i, d::Vector{Float64}, to, ec) = lsl_pull_sample_d(i, d, length(d), to, ec)
-_lsl_pull_sample(i, d::Vector{Clong},   to, ec) = lsl_pull_sample_l(i, d, length(d), to, ec)
+@static if !Sys.iswindows() && Sys.WORD_SIZE == 64
+  _lsl_pull_sample(i, d::Vector{Clong},   to, ec) = lsl_pull_sample_l(i, d, length(d), to, ec)
+end
 _lsl_pull_sample(i, d::Vector{Int32},   to, ec) = lsl_pull_sample_i(i, d, length(d), to, ec)
 _lsl_pull_sample(i, d::Vector{Int16},   to, ec) = lsl_pull_sample_s(i, d, length(d), to, ec)
 _lsl_pull_sample(i, d::Vector{Cchar},   to, ec) = lsl_pull_sample_c(i, d, length(d), to, ec)
@@ -222,7 +224,9 @@ end
 # Type mapping
 _lsl_pull_chunk(i, d::VecOrMat{Float32}, ts, to, ec) = lsl_pull_chunk_f(i, d, ts, length(d), length(ts), to, ec)
 _lsl_pull_chunk(i, d::VecOrMat{Float64}, ts, to, ec) = lsl_pull_chunk_d(i, d, ts, length(d), length(ts), to, ec)
-_lsl_pull_chunk(i, d::VecOrMat{Clong},   ts, to, ec) = lsl_pull_chunk_l(i, d, ts, length(d), length(ts), to, ec)
+@static if !Sys.iswindows() && Sys.WORD_SIZE == 64
+  _lsl_pull_chunk(i, d::VecOrMat{Clong},   ts, to, ec) = lsl_pull_chunk_l(i, d, ts, length(d), length(ts), to, ec)
+end
 _lsl_pull_chunk(i, d::VecOrMat{Int32},   ts, to, ec) = lsl_pull_chunk_i(i, d, ts, length(d), length(ts), to, ec)
 _lsl_pull_chunk(i, d::VecOrMat{Int16},   ts, to, ec) = lsl_pull_chunk_s(i, d, ts, length(d), length(ts), to, ec)
 _lsl_pull_chunk(i, d::VecOrMat{Cchar},   ts, to, ec) = lsl_pull_chunk_c(i, d, ts, length(d), length(ts), to, ec)

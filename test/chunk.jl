@@ -3,8 +3,14 @@
 
 # test/chunk.jl: test sending and receiving of chunks of supported datatypes
 
+@static if !Sys.iswindows() && Sys.WORD_SIZE == 64
+  testtypes = (Int8, Int16, Int32, Int64, Float32, Float64) 
+else
+  testtypes = (Int8, Int16, Int32, Float32, Float64) 
+end
+
 @testset "Chunk (one timestamp)" begin
-  @testset "Datatype $T" for T in (Int8, Int16, Int32, Int64, Float32, Float64) 
+  @testset "Datatype $T" for T in testtypes
 
     # Create a stream outlet
     count = 32
@@ -41,7 +47,7 @@
 end
 
 @testset "Chunk (multiple timestamp)" begin
-  @testset "Datatype $T" for T in (Int8, Int16, Int32, Int64, Float32, Float64) 
+  @testset "Datatype $T" for T in testtypes
 
     # Create a stream outlet
     count = 32
