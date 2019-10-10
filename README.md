@@ -15,14 +15,17 @@ Install and build LSL.jl using the package manager:
 ]build LSL
 ```
 
-The underlying library is built using the (BinaryProvider)[https://github.com/JuliaPackaging/BinaryProvider.jl] package, which cross compiles artefacts for Windows (x86 and x64), 
-Linux (x86, x64, ARMv7, ARMv8), MacOS and FreeBSD. Only Intel architectures are tested with
-CI, so the function of the ARM builds is not gauranteed.
+The underlying library is built using the 
+[BinaryProvider](https://github.com/JuliaPackaging/BinaryProvider.jl) package, which
+cross compiles artefacts for Windows (x86 and x64), Linux (x86, x64, ARMv7, ARMv8), MacOS
+and FreeBSD. Only Intel architectures are tested with CI, so the function of the ARM
+builds is not gauranteed.
 
 ## Usage
 
-LSL.jl provides an interface similar to the official (Python bindings)[https://github.com/labstreaminglayer/liblsl-Python/], with some changes to ensure the wrapper follows idiomatic
-Julia.
+LSL.jl provides an interface similar to the official 
+[Python bindings](https://github.com/labstreaminglayer/liblsl-Python/), with some changes
+to ensure the wrapper follows idiomatic Julia.
 
 ## Specifying a stream
 
