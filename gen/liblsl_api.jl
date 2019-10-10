@@ -193,8 +193,10 @@ function lsl_push_sample_dtp(out, data, timestamp, pushthrough)
     ccall((:lsl_push_sample_dtp, liblsl), Int32, (lsl_outlet, Ptr{Cdouble}, Cdouble, Int32), out, data, timestamp, pushthrough)
 end
 
-function lsl_push_sample_ltp(out, data, timestamp, pushthrough)
-    ccall((:lsl_push_sample_ltp, liblsl), Int32, (lsl_outlet, Ptr{Clong}, Cdouble, Int32), out, data, timestamp, pushthrough)
+@static if !Sys.iswindows() && Sys.WORD_SIZE == 64
+    function lsl_push_sample_ltp(out, data, timestamp, pushthrough)
+        ccall((:lsl_push_sample_ltp, liblsl), Int32, (lsl_outlet, Ptr{Clong}, Cdouble, Int32), out, data, timestamp, pushthrough)
+    end
 end
 
 function lsl_push_sample_itp(out, data, timestamp, pushthrough)
@@ -263,8 +265,10 @@ function lsl_push_chunk_dt(out, data, data_elements, timestamp)
     ccall((:lsl_push_chunk_dt, liblsl), Int32, (lsl_outlet, Ptr{Cdouble}, Culong, Cdouble), out, data, data_elements, timestamp)
 end
 
-function lsl_push_chunk_lt(out, data, data_elements, timestamp)
-    ccall((:lsl_push_chunk_lt, liblsl), Int32, (lsl_outlet, Ptr{Clong}, Culong, Cdouble), out, data, data_elements, timestamp)
+@static if !Sys.iswindows() && Sys.WORD_SIZE == 64
+    function lsl_push_chunk_lt(out, data, data_elements, timestamp)
+        ccall((:lsl_push_chunk_lt, liblsl), Int32, (lsl_outlet, Ptr{Clong}, Culong, Cdouble), out, data, data_elements, timestamp)
+    end
 end
 
 function lsl_push_chunk_it(out, data, data_elements, timestamp)
@@ -321,8 +325,10 @@ function lsl_push_chunk_dtn(out, data, data_elements, timestamps)
     ccall((:lsl_push_chunk_dtn, liblsl), Int32, (lsl_outlet, Ptr{Cdouble}, Culong, Ptr{Cdouble}), out, data, data_elements, timestamps)
 end
 
-function lsl_push_chunk_ltn(out, data, data_elements, timestamps)
-    ccall((:lsl_push_chunk_ltn, liblsl), Int32, (lsl_outlet, Ptr{Clong}, Culong, Ptr{Cdouble}), out, data, data_elements, timestamps)
+@static if !Sys.iswindows() && Sys.WORD_SIZE == 64
+    function lsl_push_chunk_ltn(out, data, data_elements, timestamps)
+        ccall((:lsl_push_chunk_ltn, liblsl), Int32, (lsl_outlet, Ptr{Clong}, Culong, Ptr{Cdouble}), out, data, data_elements, timestamps)
+    end
 end
 
 function lsl_push_chunk_itn(out, data, data_elements, timestamps)
