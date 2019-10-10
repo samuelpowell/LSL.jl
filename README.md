@@ -129,4 +129,7 @@ accordingly. This may not offer the best performance in a hot loop.
 ## Low level library access
 
 The full C API of liblsl is wrapped by the package, and the functions can be accessed by
-their usual names, e.g. LSL.
+their usual names, e.g. `LSL.lsl_get_name(info)`. Julia structures such as `StreamInfo`s,
+`StreamOutlet`s, and `StreamInlet`s will automatically convert to their C handle when used
+as arguments to the C library. Alternatively you may get a pointer by accesing the `.handle`
+property of each.
