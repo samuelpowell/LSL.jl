@@ -6,6 +6,7 @@
 # Note: in current wrap the following manual changes are made
 # 1. Remove duplicate signature
 # 2. Change signature of push/pull const *char to Cchar from Cstring
+# 3. Guard Clong functions with @static if !Sys.iswindows() && Sys.WORD_SIZE == 64
 
 @info("NOTE MANUAL CHANGES in deps/wrap.jl")
 
