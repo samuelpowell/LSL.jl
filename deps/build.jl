@@ -3,8 +3,9 @@ using BinaryProvider # requires BinaryProvider 0.3.0 or later
 # Parse some basic command-line arguments
 const verbose = "--verbose" in ARGS
 const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__DIR__, "usr")))
+const dirfix = Sys.iswindows ? joinpath(@__DIR__, "usr", "lib") : joinpath(@__DIR__, "usr")
 products = [
-    LibraryProduct(joinpath(@__DIR__, "usr"), ["liblsl", "liblsl64", "liblsl32"], :liblsl),
+    LibraryProduct(dirfix, ["liblsl", "liblsl64", "liblsl32"], :liblsl),
 ]
 
 # Download binaries from hosted location
@@ -24,7 +25,7 @@ download_info = Dict(
     Linux(:x86_64, libc=:glibc) => ("$bin_prefix/liblsl.v1.13.0-b13.x86_64-linux-gnu.tar.gz", "65e5d90fdc40024f404f553fcb49a285cceb27297c6b93482719a016460b6375"),
     Linux(:x86_64, libc=:musl) => ("$bin_prefix/liblsl.v1.13.0-b13.x86_64-linux-musl.tar.gz", "40ccd453480aa09c5dfca5df73efda9f4a23468ddd4702597004c427eb6e491b"),
     FreeBSD(:x86_64) => ("$bin_prefix/liblsl.v1.13.0-b13.x86_64-unknown-freebsd11.1.tar.gz", "2a133452203fc808c2c62413851a116815a98eb7d40fdfc181806a837ed20054"),
-    Windows(:x86_64) => ("https://github.com/sccn/liblsl/releases/download/1.13.0-b13/liblsl-1.13.0-Win64.7z", "eac664995173453adfb2145f80a1923a28be5a7f8123c675629be297d73ad234"),
+    Windows(:x86_64) => ("https://github.com/sccn/liblsl/releases/download/1.13.0-b13/liblsl-1.13.0-Win64.7z", "8ecccbc117e34b0ce2f45f3c51d224ab36dbbf943f83a53d3d263ecf55f44910"),
 )
 
 # Install unsatisfied or updated dependencies:
