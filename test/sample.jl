@@ -40,5 +40,9 @@ end
     close_stream(inlet)
 
   end
+
+  # Force cleanup
+  GC.gc()
+
 end
 

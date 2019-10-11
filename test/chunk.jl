@@ -44,6 +44,10 @@ end
     close_stream(inlet)
 
   end
+
+  # Force cleanup
+  GC.gc()
+
 end
 
 @testset "Chunk (multiple timestamp)" begin
@@ -83,4 +87,8 @@ end
     close_stream(inlet)
 
   end
+
+  # Force cleanup
+  GC.gc()
+
 end

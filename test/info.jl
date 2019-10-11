@@ -22,3 +22,6 @@ info = StreamInfo(name="testname",
 @test version(info) == protocol_version()
 
 end
+
+# Force cleanup
+GC.gc()

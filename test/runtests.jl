@@ -7,6 +7,6 @@ using LSL
 using Test
 
 include("info.jl")
-include("resolve.jl")
+#include("resolve.jl")
 include("sample.jl")
 include("chunk.jl")
