@@ -55,7 +55,7 @@ end
         dlurl = "https://github.com/sccn/liblsl/releases/download/1.13.0-b13/liblsl-1.13.0-Win64.7z"
         dllfn = "liblsl64.dll"
     else
-        dlirl = "https://github.com/sccn/liblsl/releases/download/1.13.0-b13/liblsl-1.13.0-Win32.7z"
+        dlurl = "https://github.com/sccn/liblsl/releases/download/1.13.0-b13/liblsl-1.13.0-Win32.7z"
         dllfn = "liblsl32.dll" 
     end
 
