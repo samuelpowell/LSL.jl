@@ -148,6 +148,7 @@ case.
 local_clock() = lib.lsl_local_clock()
 
 # High level object API
+include("XMLElement.jl")
 include("StreamInfo.jl")
 include("StreamOutlet.jl")
 include("StreamInlet.jl")

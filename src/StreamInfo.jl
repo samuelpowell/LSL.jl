@@ -9,7 +9,7 @@ import Base.show
 export StreamInfo
 export name, type, channel_count, nominal_srate, channel_format, source_id
 export version, created_at, session_id, uid, hostname
-export desc, xml
+export desc, XML
 
 """
     StreamInfo
@@ -100,9 +100,9 @@ function _destroy(info::StreamInfo)
   return nothing
 end
 
-function Base.show(io::IO, info::StreamInfo)
-  print(io, "Stream ", source_id(info), "\tname: ", name(info), "\ttype: ", type(info))
-end
+# function Base.show(io::IO, info::StreamInfo)
+#   print(io, "Stream ", source_id(info), "\tname: ", name(info), "\ttype: ", type(info))
+# end
 
 
 
@@ -251,7 +251,7 @@ hostname(info::StreamInfo) = unsafe_string(lib.lsl_get_hostname(info))
 """
     desc(info::StreamInfo)
 
-Get handle to extended description of the stream.
+Get extended description of the stream as an XMLElement.
 
 It is highly recommended that at least the channel labels are described here. See code
 examples on the LSL wiki. Other information, such as amplifier settings, measurement units
@@ -263,10 +263,10 @@ Important: if you use a stream content type for which meta-data recommendations 
 try to lay out your meta-data in agreement with these recommendations for compatibility with
 other applications.
 """
-desc(info::StreamInfo) = lib.lsl_get_desc(info)
+desc(info::StreamInfo) = LSLXMLElement(lib.lsl_get_desc(info))
 
 """
-    xml(info::StreamInfo)
+    XML(info::StreamInfo)
 
 Return XML document (from LightXML) containing the entire StreamInfo.
 
@@ -279,7 +279,7 @@ one element for each field of the StreamInfo instance, including:
   `<v4data_port>`, `<v4service_port>`, `<v6address>`, `<v6data_port>`, `<v6service_port>`
 - the extended description element `<desc>` with user-defined sub-elements.
 """
-function xml(info::StreamInfo)
+function XML(info::StreamInfo)
     xml_string_ptr = lib.lsl_get_xml(info)
     if xml_string_ptr == C_NULL
       error("liblsl returned NULL pointer when requesting XML stream information")

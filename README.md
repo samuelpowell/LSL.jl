@@ -129,6 +129,41 @@ Since the size of the available chunk is not known until the library returns, a 
 allocation (equal to a chunk size of `max_samples`) is made by this function, and resized
 accordingly. This may not offer the best performance in a hot loop.
 
+
+## Adding extended metadata to stream information
+
+Streams can be annotated using structured metadata as described in the
+[XDF](https://github.com/sccn/xdf) format. For example, an EEG recording may employ 
+the meta-data in the associated [specification](https://github.com/sccn/xdf/wiki/EEG-Meta-Data).
+
+```julia
+info = StreamInfo(name="BioSemi",
+                  type="EEG",
+                  channel_count=8,
+                  nominal_srate=100,
+                  channel_format=Float32,
+                  source_id="sub_ae852")
+
+channels = append_child(desc(info), "channels")
+for label in ["C3", "C4", "Cz", "FPz", "POz", "CPz", "O1", "O2"]
+  ch = append_child(channels, "channel")
+  append_child_value(ch, "label", label)
+  append_child_value(ch, "unit", "microvolts")
+  append_child_value(ch, "type", "EEG")
+end
+append_child_value(desc(info), "manufacturer", "SCCN")
+cap = append_child(desc(info), "cap")
+append_child_value(cap, "name", "EasyCap")
+append_child_value(cap, "size", "54")
+append_child_value(cap, "labelscheme", "10-20")
+```
+
+Full stream metadata can be rendered as XML:
+
+```julia
+XML(info)
+```
+
 ## Low level library access
 
 The full C API of liblsl is wrapped by the package, and the functions can be accessed by
