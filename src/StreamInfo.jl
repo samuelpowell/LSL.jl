@@ -29,7 +29,7 @@ StreamInfo; it is also written to disk when recording the stream (playing a simi
 a file header).
 """
 mutable struct StreamInfo{T}
-  handle::lsl_streaminfo
+  handle::lib.lsl_streaminfo
   format::Type{T}
 
   function StreamInfo(handle, format::Type{T}) where T
@@ -40,7 +40,7 @@ mutable struct StreamInfo{T}
 end
 
 # Define conversion to pointer
-unsafe_convert(::Type{lsl_streaminfo}, info::StreamInfo) = info.handle
+unsafe_convert(::Type{lib.lsl_streaminfo}, info::StreamInfo) = info.handle
 
 # Define constructor
 """
@@ -78,13 +78,13 @@ Core stream information is specified here. Any remaining meta-data can be added 
 function StreamInfo(; name::String = "untitled",
                       type::String = "", 
                       channel_count::Integer = 1,
-                      nominal_srate::Number = LSL_IRREGULAR_RATE,
+                      nominal_srate::Number = IRREGULAR_RATE,
                       channel_format::DataType = Float32,
                       source_id::String = "")
 
   # Get LSL format, create and test handle
   format = _lsl_channel_format(channel_format)
-  handle = lsl_create_streaminfo(name, type, channel_count, nominal_srate, format, source_id)
+  handle = lib.lsl_create_streaminfo(name, type, channel_count, nominal_srate, format, source_id)
   if handle == C_NULL
     error("liblsl library returned NULL pointer during StreamInfo creation")
   end
@@ -95,7 +95,7 @@ end
 # Destroy a StreamInfo handle
 function _destroy(info::StreamInfo)
   if info.handle != C_NULL
-    lsl_destroy_streaminfo(info)
+    lib.lsl_destroy_streaminfo(info)
   end
   return nothing
 end
@@ -123,7 +123,7 @@ application, the name may be a more generic or specific identifier. Multiple str
 the same name can coexist, though potentially at the cost of ambiguity (for the recording
 app or experimenter).
 """
-name(info::StreamInfo) = unsafe_string(lsl_get_name(info))
+name(info::StreamInfo) = unsafe_string(lib.lsl_get_name(info))
 
 """
     type(info::StreamInfo)
@@ -137,7 +137,7 @@ applications and automated processing systems using the recommended content type
 preferred. Content types usually follow those pre-defined in https://github.com/sccn/xdf/wiki/Meta-Data
 (or web search for: XDF meta-data).
 """
-type(info::StreamInfo) = unsafe_string(lsl_get_type(info))
+type(info::StreamInfo) = unsafe_string(lib.lsl_get_type(info))
 
 """
     channel_count(info::StreamInfo)
@@ -146,7 +146,7 @@ Return mumber of channels of the stream `info`.
 
 A stream has at least one channel; the channel count stays constant for all samples.
 """
-channel_count(info::StreamInfo) = lsl_get_channel_count(info)
+channel_count(info::StreamInfo) = lib.lsl_get_channel_count(info)
 
 """
     nominal_srate(info::StreamInfo)
@@ -161,7 +161,7 @@ the device itself). However, when the recording is imported into an application,
 importer may correct such errors more accurately if the advertised sampling rate was close
 to the specs of the device.
 """
-nominal_srate(info::StreamInfo) = lsl_get_nominal_srate(info)
+nominal_srate(info::StreamInfo) = lib.lsl_get_nominal_srate(info)
 
 """ 
     channel_format(info::StreamInfo)
@@ -185,7 +185,7 @@ The unique source (or device) identifier is an optional piece of information tha
 available, allows that endpoints (such as the recording program) can re-acquire a stream
 automatically once it is back online.
 """
-source_id(info::StreamInfo) = unsafe_string(lsl_get_source_id(info))
+source_id(info::StreamInfo) = unsafe_string(lib.lsl_get_source_id(info))
 
 
 
@@ -199,7 +199,7 @@ source_id(info::StreamInfo) = unsafe_string(lsl_get_source_id(info))
 Return protocol version used to deliver the stream.
 """
 function version(info::StreamInfo) 
-  major, minor = divrem(lsl_get_version(info), 100)
+  major, minor = divrem(lib.lsl_get_version(info), 100)
   return VersionNumber(major, minor)
 end
 
@@ -211,7 +211,7 @@ Return creation time stamp of the stream.
 This is the time stamp when the stream was first created (as determined via local_clock()
 on the providing machine).
 """
-created_at(info::StreamInfo) = lsl_get_created_at(info)
+created_at(info::StreamInfo) = lib.lsl_get_created_at(info)
 
 """
     uid(info::StreamInfo)
@@ -221,7 +221,7 @@ Return unique ID of the stream outlet (once assigned).
 This is a unique identifier of the stream outlet, and is guaranteed to be different across
 multiple instantiations of the same outlet (e.g., after a re-start). 
 """
-uid(info::StreamInfo) = unsafe_string(lsl_get_uid(info))
+uid(info::StreamInfo) = unsafe_string(lib.lsl_get_uid(info))
 
 """
     session_id(info::StreamInfo)
@@ -233,7 +233,7 @@ is rarely used, it can be used to prevent concurrent recording activitites in th
 sub-network (e.g., in multiple experiment areas) from seeing each other's streams (assigned
 via a configuration file by the experimenter, see Network Connectivity on the LSL wiki).
 """
-session_id(info::StreamInfo) = unsafe_string(lsl_get_session_id(info))
+session_id(info::StreamInfo) = unsafe_string(lib.lsl_get_session_id(info))
 
 """
     hostname(info::StreamInfo)
@@ -241,7 +241,7 @@ session_id(info::StreamInfo) = unsafe_string(lsl_get_session_id(info))
 Return hostname of the providing machine (once bound to an outlet). Modification is not
 permitted.
 """
-hostname(info::StreamInfo) = unsafe_string(lsl_get_hostname(info))
+hostname(info::StreamInfo) = unsafe_string(lib.lsl_get_hostname(info))
 
  
 #
@@ -263,7 +263,7 @@ Important: if you use a stream content type for which meta-data recommendations 
 try to lay out your meta-data in agreement with these recommendations for compatibility with
 other applications.
 """
-desc(info::StreamInfo) = lsl_get_desc(info)
+desc(info::StreamInfo) = lib.lsl_get_desc(info)
 
 """
     xml(info::StreamInfo)
@@ -280,12 +280,12 @@ one element for each field of the StreamInfo instance, including:
 - the extended description element `<desc>` with user-defined sub-elements.
 """
 function xml(info::StreamInfo)
-    xml_string_ptr = lsl_get_xml(info)
+    xml_string_ptr = lib.lsl_get_xml(info)
     if xml_string_ptr == C_NULL
       error("liblsl returned NULL pointer when requesting XML stream information")
     end
     xmldoc = LightXML.parse_string(unsafe_string(xml_string_ptr))
-    lsl_destroy_string(xml_string_ptr)
+    lib.lsl_destroy_string(xml_string_ptr)
     return xmldoc
 end
 

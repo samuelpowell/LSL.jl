@@ -14,7 +14,7 @@ A convenience class resolving streams continuously in the background. This objec
 queried at any time for the set of streams that are currently visible on the network.
 """
 mutable struct ContinuousResolver
-  handle::lsl_continuous_resolver
+  handle::lib.lsl_continuous_resolver
 
   function ContinuousResolver(handle)
     resolver = new(handle)
@@ -24,11 +24,11 @@ mutable struct ContinuousResolver
 end
 
 # Define conversion to pointer
-unsafe_convert(::Type{lsl_continuous_resolver}, resolver::ContinuousResolver) = resolver.handle
+unsafe_convert(::Type{lib.lsl_continuous_resolver}, resolver::ContinuousResolver) = resolver.handle
 
 function _destroy(resolver::ContinuousResolver)
   if resolver.handle != C_NULL
-    lsl_destroy_continuous_resolver(resolver)
+    lib.lsl_destroy_continuous_resolver(resolver)
   end
   return nothing
 end
@@ -44,7 +44,7 @@ Construct a continuous resolver which resolves all streams on the network.
                         longer reported by the resolver.
 """
 function ContinuousResolver(; forget_after = 5.0)
-  handle = lsl_create_continuous_resolver(forget_after)
+  handle = lib.lsl_create_continuous_resolver(forget_after)
   if handle == C_NULL
     error("liblsl library returned NULL pointer during ContinuousResolver creation")
   end
@@ -71,7 +71,7 @@ This is analogous to the functionality provided by the function resolve_stream(p
                         longer reported by the resolver.
 """
 function ContinuousResolver(prop::String, value::String; forget_after = 5.0)
-  handle = lsl_create_continuous_resolver_byprop(prop, value, forget_after)
+  handle = lib.lsl_create_continuous_resolver_byprop(prop, value, forget_after)
   if handle == C_NULL
     error("liblsl library returned NULL pointer during ContinuousResolver creation")
   end
@@ -97,7 +97,7 @@ starts-with(name,'BioSemi') and count(description/desc/channels/channel)=32"
                         longer reported by the resolver.
 """
 function ContinuousResolver(predicate::String; forget_after = 5.0)
-  handle = lsl_create_continuous_resolver_bypred(predicate, forget_after)
+  handle = lib.lsl_create_continuous_resolver_bypred(predicate, forget_after)
   if handle == C_NULL
     error("liblsl library returned NULL pointer during ContinuousResolver creation")
   end
@@ -124,11 +124,11 @@ subsequently be used to open an inlet. The full description can be retrieved fro
             present on the network may be returned.
 """
 function resolve_streams(;timeout = 1.0)
-  infoptrs = Vector{lsl_streaminfo}(undef, MAX_RESOLVE)
-  nstreams = handle_error(lsl_resolve_all(infoptrs, MAX_RESOLVE, timeout))
+  infoptrs = Vector{lib.lsl_streaminfo}(undef, MAX_RESOLVE)
+  nstreams = handle_error(lib.lsl_resolve_all(infoptrs, MAX_RESOLVE, timeout))
   infos = Vector{StreamInfo}(undef, nstreams)
   for i in 1:nstreams
-    format_type = _jl_channel_format(lsl_get_channel_format(infoptrs[i]))
+    format_type = _jl_channel_format(lib.lsl_get_channel_format(infoptrs[i]))
     infos[i] = StreamInfo(infoptrs[i], format_type)
   end
   return infos 
@@ -159,13 +159,13 @@ subsequently be used to open an inlet.
 # Example
 results = resolve_byprop("type", "EEG")                  
 """
-function resolve_byprop(prop::String, value::String; minimum = 1, timeout = LSL_FOREVER)
-  infoptrs = Vector{lsl_streaminfo}(undef, MAX_RESOLVE)
-  nstreams = handle_error(lsl_resolve_byprop(infoptrs, MAX_RESOLVE,
-                                             prop, value, minimum, timeout))
+function resolve_byprop(prop::String, value::String; minimum = 1, timeout = FOREVER)
+  infoptrs = Vector{lib.lsl_streaminfo}(undef, MAX_RESOLVE)
+  nstreams = handle_error(lib.lsl_resolve_byprop(infoptrs, MAX_RESOLVE,
+                                                 prop, value, minimum, timeout))
   infos = Vector{StreamInfo}(undef, nstreams)
   for i in 1:nstreams
-    format_type = _jl_channel_format(lsl_get_channel_format(infoptrs[i]))
+    format_type = _jl_channel_format(lib.lsl_get_channel_format(infoptrs[i]))
     infos[i] = StreamInfo(infoptrs[i], format_type)
   end
   return infos 
@@ -192,13 +192,13 @@ subsequently be used to open an inlet.
 -`timeout::Number`: A timeout of the operation, in seconds. If the timeout expires, less than
                   the desired number of streams (possibly none) will be returned.             
 """
-function resolve_bypred(predicate::String; minimum = 1, timeout = LSL_FOREVER)
-  infoptrs = Vector{lsl_streaminfo}(undef, MAX_RESOLVE)
-  nstreams = handle_error(lsl_resolve_bypred(infoptrs, MAX_RESOLVE,
-                                             predicate, minimum, timeout))
+function resolve_bypred(predicate::String; minimum = 1, timeout = FOREVER)
+  infoptrs = Vector{lib.lsl_streaminfo}(undef, MAX_RESOLVE)
+  nstreams = handle_error(lib.lsl_resolve_bypred(infoptrs, MAX_RESOLVE,
+                                                 predicate, minimum, timeout))
   infos = Vector{StreamInfo}(undef, nstreams)
   for i in 1:nstreams
-    format_type = _jl_channel_format(lsl_get_channel_format(infoptrs[i]))
+    format_type = _jl_channel_format(lib.lsl_get_channel_format(infoptrs[i]))
     infos[i] = StreamInfo(infoptrs[i], format_type)
   end
   return infos 

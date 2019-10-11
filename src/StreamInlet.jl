@@ -8,7 +8,7 @@ export open_stream, close_stream, set_postprocessing, pull_sample, pull_sample!,
 export was_clock_reset, smoothing_halftime, samples_available
 
 mutable struct StreamInlet{T}
-  handle::lsl_inlet
+  handle::lib.lsl_inlet
   info::StreamInfo{T}
 
   function StreamInlet(handle, info::StreamInfo{T}) where T
@@ -20,13 +20,13 @@ end
 # Destroy a StreamInfo handle
 function _destroy(inlet::StreamInlet)
   if inlet.handle != C_NULL
-    lsl_destroy_inlet(inlet)
+    lib.lsl_destroy_inlet(inlet)
   end
   return nothing
 end
 
 # Define conversion to pointer
-unsafe_convert(::Type{lsl_inlet}, inlet::StreamInlet) = inlet.handle
+unsafe_convert(::Type{lib.lsl_inlet}, inlet::StreamInlet) = inlet.handle
 
 # Define constructor
 """
@@ -66,13 +66,13 @@ function StreamInlet(info::StreamInfo{T};
                      processing_flags = 0) where T
 
   # Create and test handle
-  handle = lsl_create_inlet(info, max_buflen, max_chunklen, recover)
+  handle = lib.lsl_create_inlet(info, max_buflen, max_chunklen, recover)
   if handle == C_NULL
     error("liblsl library returned NULL pointer during StreamInlet creation")
   end
 
   if processing_flags > 0
-    handle_error(lsl_set_postprocessing(handle, processing_flags))
+    handle_error(lib.lsl_set_postprocessing(handle, processing_flags))
   end
   
   return StreamInlet(handle, info)
@@ -96,9 +96,9 @@ Function may throw a timeout error, or lost error (if the stream source has been
 # Keyword arguments
 - `timeout::Number`: timeout of the operation.
 """
-function open_stream(inlet::StreamInlet; timeout = LSL_FOREVER)
+function open_stream(inlet::StreamInlet; timeout = FOREVER)
   errcode = Ref{Int32}(0)
-  lsl_open_stream(inlet, timeout, errcode)
+  lib.lsl_open_stream(inlet, timeout, errcode)
   handle_error(errcode[])
   return inlet
 end
@@ -113,7 +113,7 @@ buffering of data for this inlet will be stopped. If an application stops being 
 in data from a source (temporarily or not) but keeps the outlet alive, it should call
 lsl_close_stream() to not waste unnecessary system and network  resources.
 """
-close_stream(inlet::StreamInlet) = lsl_close_stream(inlet)
+close_stream(inlet::StreamInlet) = lib.lsl_close_stream(inlet)
 
 """
     time_correction(inlet::StreamInlet; timeout = LSL_FOREVER)
@@ -133,9 +133,9 @@ Function may throw a timeout error, or lost error (if the stream source has been
 # Keyword arguments
 `timeout::Number`: timeout to acquire the first time-correction estimate.
 """
-function time_correction(inlet::StreamInlet; timeout = LSL_FOREVER)
+function time_correction(inlet::StreamInlet; timeout = FOREVER)
   errcode = Ref{Int32}(0) #Ref{lsl_error_code_t}(lsl_error_code_t(0))
-  timcorr = lsl_time_correction(inlet, timeout, errcode)
+  timcorr = lib.lsl_time_correction(inlet, timeout, errcode)
   handle_error(errcode[])
   return timcorr
 end
@@ -161,7 +161,7 @@ Function may throw an argument error if unknown flags are supplied.
                  
 """
 function set_postprocessing(inlet::StreamInlet, flags::UInt32)
-  handle_error(lsl_set_postprocessing(inlet, flags))
+  handle_error(lib.lsl_set_postprocessing(inlet, flags))
   return inlet
 end
 
@@ -171,14 +171,14 @@ end
 #
 
 # Type mapping
-_lsl_pull_sample(i, d::Vector{Float32}, to, ec) = lsl_pull_sample_f(i, d, length(d), to, ec)
-_lsl_pull_sample(i, d::Vector{Float64}, to, ec) = lsl_pull_sample_d(i, d, length(d), to, ec)
+_lsl_pull_sample(i, d::Vector{Float32}, to, ec) = lib.lsl_pull_sample_f(i, d, length(d), to, ec)
+_lsl_pull_sample(i, d::Vector{Float64}, to, ec) = lib.lsl_pull_sample_d(i, d, length(d), to, ec)
 @static if !Sys.iswindows() && Sys.WORD_SIZE == 64
-  _lsl_pull_sample(i, d::Vector{Clong},   to, ec) = lsl_pull_sample_l(i, d, length(d), to, ec)
+  _lsl_pull_sample(i, d::Vector{Clong},   to, ec) = lib.lsl_pull_sample_l(i, d, length(d), to, ec)
 end
-_lsl_pull_sample(i, d::Vector{Int32},   to, ec) = lsl_pull_sample_i(i, d, length(d), to, ec)
-_lsl_pull_sample(i, d::Vector{Int16},   to, ec) = lsl_pull_sample_s(i, d, length(d), to, ec)
-_lsl_pull_sample(i, d::Vector{Cchar},   to, ec) = lsl_pull_sample_c(i, d, length(d), to, ec)
+_lsl_pull_sample(i, d::Vector{Int32},   to, ec) = lib.lsl_pull_sample_i(i, d, length(d), to, ec)
+_lsl_pull_sample(i, d::Vector{Int16},   to, ec) = lib.lsl_pull_sample_s(i, d, length(d), to, ec)
+_lsl_pull_sample(i, d::Vector{Cchar},   to, ec) = lib.lsl_pull_sample_c(i, d, length(d), to, ec)
 
 """
     pull_sample(inlet::StreamInfo; timeout = LSL_FOREVER)
@@ -192,7 +192,7 @@ timestamp will be 0.0.
 # Keyword arguments
 `timeout::Number`: timeout to acquire the sample.
 """
-function pull_sample(inlet::StreamInlet{T}; timeout = LSL_FOREVER) where T
+function pull_sample(inlet::StreamInlet{T}; timeout = FOREVER) where T
   data = Vector{T}(undef, channel_count(inlet.info))
   return pull_sample!(data, inlet, timeout=timeout)
 end
@@ -209,7 +209,7 @@ timestamp will be 0.0.
 # Keyword arguments
 `timeout::Number`: timeout to acquire the sample.
 """
-function pull_sample!(data::Vector{T}, inlet::StreamInlet{T}; timeout = LSL_FOREVER) where T
+function pull_sample!(data::Vector{T}, inlet::StreamInlet{T}; timeout = FOREVER) where T
   length(data) == channel_count(inlet.info) || error("data length ≂̸ channel count")
   errcode = Ref{Int32}(0); 
   timestamp = _lsl_pull_sample(inlet, data, timeout, errcode)
@@ -222,14 +222,14 @@ end
 #
 
 # Type mapping
-_lsl_pull_chunk(i, d::VecOrMat{Float32}, ts, to, ec) = lsl_pull_chunk_f(i, d, ts, length(d), length(ts), to, ec)
-_lsl_pull_chunk(i, d::VecOrMat{Float64}, ts, to, ec) = lsl_pull_chunk_d(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Float32}, ts, to, ec) = lib.lsl_pull_chunk_f(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Float64}, ts, to, ec) = lib.lsl_pull_chunk_d(i, d, ts, length(d), length(ts), to, ec)
 @static if !Sys.iswindows() && Sys.WORD_SIZE == 64
-  _lsl_pull_chunk(i, d::VecOrMat{Clong},   ts, to, ec) = lsl_pull_chunk_l(i, d, ts, length(d), length(ts), to, ec)
+  _lsl_pull_chunk(i, d::VecOrMat{Clong},   ts, to, ec) = lib.lsl_pull_chunk_l(i, d, ts, length(d), length(ts), to, ec)
 end
-_lsl_pull_chunk(i, d::VecOrMat{Int32},   ts, to, ec) = lsl_pull_chunk_i(i, d, ts, length(d), length(ts), to, ec)
-_lsl_pull_chunk(i, d::VecOrMat{Int16},   ts, to, ec) = lsl_pull_chunk_s(i, d, ts, length(d), length(ts), to, ec)
-_lsl_pull_chunk(i, d::VecOrMat{Cchar},   ts, to, ec) = lsl_pull_chunk_c(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Int32},   ts, to, ec) = lib.lsl_pull_chunk_i(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Int16},   ts, to, ec) = lib.lsl_pull_chunk_s(i, d, ts, length(d), length(ts), to, ec)
+_lsl_pull_chunk(i, d::VecOrMat{Cchar},   ts, to, ec) = lib.lsl_pull_chunk_c(i, d, ts, length(d), length(ts), to, ec)
 
 """
     pull_chunk(inlet::StreamInfo; max_samples = 1024, timeout = LSL_FOREVER)
@@ -246,7 +246,7 @@ timestamp will be 0.0.
 # Keyword arguments
 `timeout::Number`: timeout to acquire the sample.
 """
-function pull_chunk(inlet::StreamInlet{T}; max_samples = 1024, timeout = LSL_FOREVER) where T
+function pull_chunk(inlet::StreamInlet{T}; max_samples = 1024, timeout = FOREVER) where T
   slen = Int(channel_count(inlet.info))
   data = zeros(T, slen * max_samples)
   timestamps = zeros(Float64, max_samples)
@@ -278,7 +278,7 @@ call would block: to be sure, set the pull timeout to 0.0 or an acceptably low v
 underlying implementation supports it, the value will be the number of samples available
 (otherwise it will be 1 or 0).
 """
-samples_available(inlet::StreamInlet) = lsl_samples_available(inlet)
+samples_available(inlet::StreamInlet) = lib.lsl_samples_available(inlet)
 
 """
     was_clock_reset(inlet::StreamInlet)
@@ -289,7 +289,7 @@ This is rarely-used function is only needed for applications that combine multip
 time_correction values to estimate precise clock drift if they should tolerate cases where
 the source machine was hot-swapped or restarted.
 """
-was_clock_reset(inlet::StreamInlet) = lsl_was_clock_reset(inlet)
+was_clock_reset(inlet::StreamInlet) = lib.lsl_was_clock_reset(inlet)
 
 """
   smoothing_halftime(inlet::StreamInlet, value)
@@ -305,5 +305,5 @@ to track changes up to 10 degrees C per minute sufficiently well.
 `value::Number`: The new value, in seconds. This is the time after which a past sample will
                  be weighted by 1/2 in the exponential smoothing window.
 """
-smoothing_halftime(inlet, value) = handle_error(lsl_smoothing_halftime(inlet, value))
+smoothing_halftime(inlet, value) = handle_error(lib.lsl_smoothing_halftime(inlet, value))
 
