@@ -8,7 +8,7 @@ export StreamOutlet
 export push_sample, push_chunk, have_consumers, wait_for_consumers
 
 mutable struct StreamOutlet{T}
-  handle::lsl_outlet
+  handle::lib.lsl_outlet
   info::StreamInfo{T}
 
   function StreamOutlet(handle, info::StreamInfo{T}) where T
@@ -21,13 +21,13 @@ end
 # Destroy a StreamInfo handle
 function _destroy(outlet::StreamOutlet)
   if outlet.handle != C_NULL
-    lsl_destroy_outlet(outlet)
+    lib.lsl_destroy_outlet(outlet)
   end
   return nothing
 end
 
 # Define conversion to pointer
-unsafe_convert(::Type{lsl_outlet}, outlet::StreamOutlet) = outlet.handle
+unsafe_convert(::Type{lib.lsl_outlet}, outlet::StreamOutlet) = outlet.handle
 
 # Define constructor
 """
@@ -52,13 +52,13 @@ Establish a new stream outlet. This makes the stream discoverable.
 function StreamOutlet(info::StreamInfo{T}; chunk_size = 0, max_buffered = 360) where T
 
   # Create and test handle
-  handle = lsl_create_outlet(info, chunk_size, max_buffered)
+  handle = lib.lsl_create_outlet(info, chunk_size, max_buffered)
   if handle == C_NULL
     error("liblsl library returned NULL pointer during StreamOutlet creation")
   end
 
   # Create an internal information object
-  info = lsl_get_info(handle)
+  info = lib.lsl_get_info(handle)
   
   return StreamOutlet(handle, StreamInfo(info, T))
 end
@@ -78,16 +78,16 @@ const _lsl_typestring_map = Dict{DataType, String}(Float32 => "f",
                                                    String => "str",
                                                    Cvoid => "v")
 
-_lsl_push_sample_tp(o, d::Vector{Float32}, ts, pt)  = lsl_push_sample_ftp(o, d, ts, pt)
-_lsl_push_sample_tp(o, d::Vector{Float64}, ts, pt)  = lsl_push_sample_dtp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Float32}, ts, pt)  = lib.lsl_push_sample_ftp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Float64}, ts, pt)  = lib.lsl_push_sample_dtp(o, d, ts, pt)
 @static if !Sys.iswindows() && Sys.WORD_SIZE == 64
-  _lsl_push_sample_tp(o, d::Vector{Clong}, ts, pt)    = lsl_push_sample_ltp(o, d, ts, pt)
+  _lsl_push_sample_tp(o, d::Vector{Clong}, ts, pt)    = lib.lsl_push_sample_ltp(o, d, ts, pt)
 end
-_lsl_push_sample_tp(o, d::Vector{Int32}, ts, pt)    = lsl_push_sample_itp(o, d, ts, pt)
-_lsl_push_sample_tp(o, d::Vector{Int16}, ts, pt)    = lsl_push_sample_stp(o, d, ts, pt)
-_lsl_push_sample_tp(o, d::Vector{Cchar}, ts, pt)    = lsl_push_sample_ctp(o, d, ts, pt)
-_lsl_push_sample_tp(o, d::Vector{Cvoid}, ts, pt)    = lsl_push_sample_vtp(o, d, ts, pt)
-_lsl_push_sample_tp(o, d::Vector{String}, ts, pt)   = lsl_push_sample_strtp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Int32}, ts, pt)    = lib.lsl_push_sample_itp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Int16}, ts, pt)    = lib.lsl_push_sample_stp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Cchar}, ts, pt)    = lib.lsl_push_sample_ctp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{Cvoid}, ts, pt)    = lib.lsl_push_sample_vtp(o, d, ts, pt)
+_lsl_push_sample_tp(o, d::Vector{String}, ts, pt)   = lib.lsl_push_sample_strtp(o, d, ts, pt)
 
  """
     push_sample(outlet::StreamOutlet{T},
@@ -119,26 +119,26 @@ end
 #
 
 # Type mappings
-_lsl_push_chunk_tp(o, d::Matrix{Float32}, ts::Number, pt) = lsl_push_chunk_ftp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Matrix{Float64}, ts::Number, pt) = lsl_push_chunk_dtp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Float32}, ts::Number, pt) = lib.lsl_push_chunk_ftp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Float64}, ts::Number, pt) = lib.lsl_push_chunk_dtp(o, d, length(d), ts, pt)
 @static if !Sys.iswindows() && Sys.WORD_SIZE == 64
-  _lsl_push_chunk_tp(o, d::Matrix{Clong}, ts::Number, pt)   = lsl_push_chunk_ltp(o, d, length(d), ts, pt)
+  _lsl_push_chunk_tp(o, d::Matrix{Clong}, ts::Number, pt)   = lib.lsl_push_chunk_ltp(o, d, length(d), ts, pt)
 end
-_lsl_push_chunk_tp(o, d::Matrix{Int32}, ts::Number, pt)   = lsl_push_chunk_itp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Matrix{Int16}, ts::Number, pt)   = lsl_push_chunk_stp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Matrix{Cchar}, ts::Number, pt)   = lsl_push_chunk_ctp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tp(o, d::Matrix{Cvoid}, ts::Number, pt)   = lsl_push_chunk_vtp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Int32}, ts::Number, pt)   = lib.lsl_push_chunk_itp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Int16}, ts::Number, pt)   = lib.lsl_push_chunk_stp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Cchar}, ts::Number, pt)   = lib.lsl_push_chunk_ctp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tp(o, d::Matrix{Cvoid}, ts::Number, pt)   = lib.lsl_push_chunk_vtp(o, d, length(d), ts, pt)
 #_lsl_push_chunk_tp(o, d::Vector{String}, ts::Number, pt)  = lsl_push_chunk_strtp(o, d, length(d), ts, pt)
 
-_lsl_push_chunk_tnp(o, d::Matrix{Float32}, ts::Vector, pt) = lsl_push_chunk_ftnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Matrix{Float64}, ts::Vector, pt) = lsl_push_chunk_dtnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Float32}, ts::Vector, pt) = lib.lsl_push_chunk_ftnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Float64}, ts::Vector, pt) = lib.lsl_push_chunk_dtnp(o, d, length(d), ts, pt)
 @static if !Sys.iswindows() && Sys.WORD_SIZE == 64
-  _lsl_push_chunk_tnp(o, d::Matrix{Clong}, ts::Vector, pt)   = lsl_push_chunk_ltnp(o, d, length(d), ts, pt)
+  _lsl_push_chunk_tnp(o, d::Matrix{Clong}, ts::Vector, pt)   = lib.lsl_push_chunk_ltnp(o, d, length(d), ts, pt)
 end
-_lsl_push_chunk_tnp(o, d::Matrix{Int32}, ts::Vector, pt)   = lsl_push_chunk_itnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Matrix{Int16}, ts::Vector, pt)   = lsl_push_chunk_stnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Matrix{Cchar}, ts::Vector, pt)   = lsl_push_chunk_ctnp(o, d, length(d), ts, pt)
-_lsl_push_chunk_tnp(o, d::Matrix{Cvoid}, ts::Vector, pt)   = lsl_push_chunk_vtnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Int32}, ts::Vector, pt)   = lib.lsl_push_chunk_itnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Int16}, ts::Vector, pt)   = lib.lsl_push_chunk_stnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Cchar}, ts::Vector, pt)   = lib.lsl_push_chunk_ctnp(o, d, length(d), ts, pt)
+_lsl_push_chunk_tnp(o, d::Matrix{Cvoid}, ts::Vector, pt)   = lib.lsl_push_chunk_vtnp(o, d, length(d), ts, pt)
 #_lsl_push_chunk_tnp(o, d::Vector{String}, ts::Vector, pt)  = lsl_push_chunk_strtnp(o, d, length(d), ts, pt)
 
 """
@@ -161,9 +161,9 @@ M is the channel count of the outlet, and N is the number of samples in the chun
                    pushthrough flag.
 """ 
 function push_chunk(outlet::StreamOutlet{T},
-                     data::Matrix{T};
-                     timestamp = 0.0,
-                     pushthrough = true) where T
+                    data::Matrix{T};
+                    timestamp = 0.0,
+                    pushthrough = true) where T
 
   size(data,1) == channel_count(outlet.info) || error("data length ≂̸ channel count")
   handle_error(_lsl_push_chunk_tp(outlet, data, timestamp, pushthrough))
@@ -191,9 +191,9 @@ M is the channel count of the outlet, and N is the number of samples in the chun
                       pushthrough flag.
 """ 
 function push_chunk(outlet::StreamOutlet{T},
-                     data::Matrix{T},
-                     timestamp::Vector;
-                     pushthrough = true) where T
+                    data::Matrix{T},
+                    timestamp::Vector;
+                    pushthrough = true) where T
 
   size(data,2) == length(timestamp) || error("number of timestamps != chunk_count")
   size(data,1) == channel_count(outlet.info) || error("data length ≂̸ channel count")
@@ -248,7 +248,7 @@ end
 
 Return true if consumers are currently registered, false otherwise.
 """
-have_consumers(outlet::StreamOutlet) = lsl_have_consumers(outlet) > 0 ? true : false
+have_consumers(outlet::StreamOutlet) = lib.lsl_have_consumers(outlet) > 0 ? true : false
 
 
 """
@@ -259,7 +259,7 @@ Wait until some consumer shows up (without wasting resources).
 Returns true if succesful, false if timeout ocurred.
 """
 function wait_for_consumers(outlet::StreamOutlet, timeout)
-  status = lsl_wait_for_consumers(outlet, timeout)
+  status = lib.lsl_wait_for_consumers(outlet, timeout)
   return status == 1 ? true : false
 end
 
@@ -272,7 +272,7 @@ This is what was used to create the stream (and also has the Additional Network 
 fields assigned).
 """
 function info(outlet::StreamOutlet{T}) where T
-  handle = lsl_get_info(outlet)
+  handle = lib.lsl_get_info(outlet)
   return StreamInfo(handle, T)
 end
 

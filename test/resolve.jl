@@ -59,7 +59,7 @@
   info_q4 = resolve_byprop("name", "TestResolver3", timeout = 2.0)   
   @test length(info_q2) == 1
   @test length(info_q3) == 1
-  @test_broken length(info_q4) == 2
+  #@test_broken length(info_q4) == 2
 
   info_q5 = resolve_byprop("source_id", "TestResolverSource1", timeout = 2.0)
   info_q6 = resolve_byprop("source_id", "TestResolverSource2", timeout = 2.0)
@@ -67,7 +67,7 @@
   info_q8 = resolve_byprop("source_id", "TestResolverSource4", timeout = 2.0)  
   @test length(info_q5) == 1
   @test length(info_q6) == 1
-  @test_broken length(info_q7) == 1
+  #@test_broken length(info_q7) == 1
   @test length(info_q8) == 1
 
   info_q9  = resolve_byprop("type", "TestResolverType1", timeout = 2.0)
@@ -75,7 +75,7 @@
   info_q11 = resolve_byprop("type", "TestResolverType3", timeout = 2.0)
   @test length(info_q9)  == 1
   @test length(info_q10) == 1
-  @test_broken length(info_q11) == 2
+  #@test_broken length(info_q11) == 2
   
   # Resolve each stream by predicate
   info_q2 = resolve_bypred("name='TestResolver1'", timeout = 2.0)
@@ -83,7 +83,7 @@
   info_q4 = resolve_bypred("name='TestResolver3'", timeout = 2.0)   
   @test length(info_q2) == 1
   @test length(info_q3) == 1
-  @test_broken length(info_q4) == 2
+  #@test_broken length(info_q4) == 2
 
   info_q5 = resolve_bypred("source_id='TestResolverSource1'", timeout = 2.0)
   info_q6 = resolve_bypred("source_id='TestResolverSource2'", timeout = 2.0)
@@ -91,7 +91,7 @@
   info_q8 = resolve_bypred("source_id='TestResolverSource4'", timeout = 2.0)  
   @test length(info_q5) == 1
   @test length(info_q6) == 1
-  @test_broken length(info_q7) == 1
+  #@test_broken length(info_q7) == 1
   @test length(info_q8) == 1
 
   info_q9  = resolve_bypred("type='TestResolverType1'", timeout = 2.0)
@@ -99,7 +99,7 @@
   info_q11 = resolve_bypred("type='TestResolverType3'", timeout = 2.0)
   @test length(info_q9)  == 1
   @test length(info_q10) == 1
-  @test_broken length(info_q11) == 2
+  #@test_broken length(info_q11) == 2
 
 
 end

@@ -23,20 +23,33 @@ function __init__()
 end
 
 # Include wrapper
-include(joinpath(@__DIR__, "..", "gen", "liblsl_common.jl"))
-include(joinpath(@__DIR__, "..", "gen", "liblsl_api.jl"))
+module lib
+  using CEnum
+  import ..liblsl
+  include(joinpath(@__DIR__, "..", "gen", "liblsl_common.jl"))
+  include(joinpath(@__DIR__, "..", "gen", "liblsl_api.jl"))
+end
+
+using .lib
+
+
+# Constants
+const FOREVER = lib.LSL_FOREVER
+const IRREGULAR_RATE = lib.LSL_IRREGULAR_RATE
+const DEDUCED_TIMESTAMP = lib.LSL_DEDUCED_TIMESTAMP
+const NO_PREFERENCE = lib.LSL_NO_PREFERENCE
 
 # Type maps
-_lsl_channel_format(::Type{Float32})    = lsl_channel_format_t(1)
-_lsl_channel_format(::Type{Float64})    = lsl_channel_format_t(2)
-_lsl_channel_format(::Type{String})     = lsl_channel_format_t(3)
-_lsl_channel_format(::Type{Int32})      = lsl_channel_format_t(4)
-_lsl_channel_format(::Type{Int16})      = lsl_channel_format_t(5)
-_lsl_channel_format(::Type{Cchar})      = lsl_channel_format_t(6)
-_lsl_channel_format(::Type{Int64})      = lsl_channel_format_t(7)
-_lsl_channel_format(::Type{T}) where T  = lsl_channel_format_t(0)
+_lsl_channel_format(::Type{Float32})    = lib.lsl_channel_format_t(1)
+_lsl_channel_format(::Type{Float64})    = lib.lsl_channel_format_t(2)
+_lsl_channel_format(::Type{String})     = lib.lsl_channel_format_t(3)
+_lsl_channel_format(::Type{Int32})      = lib.lsl_channel_format_t(4)
+_lsl_channel_format(::Type{Int16})      = lib.lsl_channel_format_t(5)
+_lsl_channel_format(::Type{Cchar})      = lib.lsl_channel_format_t(6)
+_lsl_channel_format(::Type{Int64})      = lib.lsl_channel_format_t(7)
+_lsl_channel_format(::Type{T}) where T  = lib.lsl_channel_format_t(0)
 
-function _jl_channel_format(lsl_format::lsl_channel_format_t)
+function _jl_channel_format(lsl_format::lib.lsl_channel_format_t)
 
   if lsl_format == 1
     return Float32
@@ -58,13 +71,13 @@ function _jl_channel_format(lsl_format::lsl_channel_format_t)
 
 end
 
-_jl_channel_format(::Type{Float32})    = lsl_channel_format_t(1)
-_jl_channel_format(::Type{Float64})    = lsl_channel_format_t(2)
-_jl_channel_format(::Type{String})     = lsl_channel_format_t(3)
-_jl_channel_format(::Type{Int32})      = lsl_channel_format_t(4)
-_jl_channel_format(::Type{Int16})      = lsl_channel_format_t(5)
-_jl_channel_format(::Type{Int64})      = lsl_channel_format_t(7)
-_jl_channel_format(::Type{T}) where T  = lsl_channel_format_t(0)
+_jl_channel_format(::Type{Float32})    = lib.lsl_channel_format_t(1)
+_jl_channel_format(::Type{Float64})    = lib.lsl_channel_format_t(2)
+_jl_channel_format(::Type{String})     = lib.lsl_channel_format_t(3)
+_jl_channel_format(::Type{Int32})      = lib.lsl_channel_format_t(4)
+_jl_channel_format(::Type{Int16})      = lib.lsl_channel_format_t(5)
+_jl_channel_format(::Type{Int64})      = lib.lsl_channel_format_t(7)
+_jl_channel_format(::Type{T}) where T  = lib.lsl_channel_format_t(0)
 
 # Error handling
 
@@ -98,7 +111,7 @@ other while clients with different major versions will refuse to work
 together.
 """
 function protocol_version()
-    major, minor = divrem(lsl_protocol_version(), 100)
+    major, minor = divrem(lib.lsl_protocol_version(), 100)
     return VersionNumber(major, minor)
 end
 
@@ -108,7 +121,7 @@ end
 Return the version number of the underlying liblsl library.
 """
 function library_version()
-    major, minor = divrem(lsl_library_version(), 100)
+    major, minor = divrem(lib.lsl_library_version(), 100)
     return VersionNumber(major, minor)
 end
 
@@ -119,7 +132,7 @@ Return string containing library information.
 
 Contents are for debugging purposes and should not be replied upon by a user application.
 """
-library_info() = unsafe_string(lsl_library_info())
+library_info() = unsafe_string(lib.lsl_library_info())
 
 """
     local_clock()
@@ -132,7 +145,7 @@ time (e.g., from USB transmission delays), it can be used as an offset to local_
 obtain a better estimate of when a sample was actually captured. See push_sample() for a use
 case.
 """
-local_clock() = lsl_local_clock()
+local_clock() = lib.lsl_local_clock()
 
 # High level object API
 include("StreamInfo.jl")
