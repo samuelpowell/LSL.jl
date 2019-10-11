@@ -21,7 +21,22 @@ info = StreamInfo(name="testname",
 
 @test version(info) == protocol_version()
 
+channels = append_child(desc(info), "channels")
+for label in ["C3", "C4", "Cz", "FPz", "POz", "CPz", "O1", "O2"]
+  ch = append_child(channels, "channel")
+  append_child_value(ch, "label", label)
+  append_child_value(ch, "unit", "microvolts")
+  append_child_value(ch, "type", "EEG")
+end
+append_child_value(desc(info), "manufacturer", "SCCN")
+cap = append_child(desc(info), "cap")
+append_child_value(cap, "name", "EasyCap")
+append_child_value(cap, "size", "54")
+append_child_value(cap, "labelscheme", "10-20")
+
 end
 
 # Force cleanup
 GC.gc()
+
+
