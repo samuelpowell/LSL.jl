@@ -15,11 +15,10 @@ Install and build LSL.jl using the package manager:
 ]build LSL
 ```
 
-The underlying library is built using the 
-[BinaryProvider](https://github.com/JuliaPackaging/BinaryProvider.jl) package, which
-cross compiles artefacts for Windows (x86 and x64), Linux (x86, x64, ARMv7, ARMv8), MacOS
-and FreeBSD. Only Intel architectures are tested with CI, so the function of the ARM
-builds is not gauranteed.
+Official library builds are employed for Windows (x86 and x64), with Linux (x86, x64, 
+ARMv7, ARMv8), MacOS and FreeBSD utilising cross-compiled libraries built using the
+[BinaryProvider](https://github.com/JuliaPackaging/BinaryProvider.jl) package. Only Intel
+architectures are tested with CI, so the function of the ARM builds is not gauranteed.
 
 ## Usage
 
