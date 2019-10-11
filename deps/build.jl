@@ -44,5 +44,26 @@ if unsatisfied || !isinstalled(dl_info...; prefix=prefix)
     install(dl_info...; prefix=prefix, force=true, verbose=verbose)
 end
 
+# Cludge official binary library to avoid problems with BinaryBuilder
+@static if Sys.iswindows()
+
+    dllprefix = joinpath(@__DIR__, "usr") 
+    exe7z = joinpath(Sys.BINDIR, "7z.exe")
+    dlpath = joinpath(@__DIR__, "usr", "downloads", "liblsl-1.13.0-official.7z")
+    
+    if Sys.WORD_SIZE == 64
+        dlurl = "https://github.com/sccn/liblsl/releases/download/1.13.0-b13/liblsl-1.13.0-Win64.7z"
+        dllfn = "liblsl64.dll"
+    else
+        dlirl = "https://github.com/sccn/liblsl/releases/download/1.13.0-b13/liblsl-1.13.0-Win32.7z"
+        dllfn = "liblsl32.dll" 
+    end
+
+    download(dlurl, dlpath)
+
+    run(`$exe7z e $dlpath -o$(dllprefix) $dllfn -r -aoa`)
+    mv(joinpath(dllprefix, dllfn), joinpath(dllprefix, "liblsl.dll"), force=true)
+end
+
 # Write out a deps.jl file that will contain mappings for our products
 write_deps_file(joinpath(@__DIR__, "deps.jl"), products, verbose=verbose)
