@@ -23,5 +23,3 @@ info = StreamInfo(name="testname",
 
 end
 
-# Force cleanup
-GC.gc()

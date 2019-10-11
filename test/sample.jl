@@ -41,8 +41,5 @@ end
 
   end
 
-  # Force cleanup
-  GC.gc()
-
 end
 
