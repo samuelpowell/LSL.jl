@@ -1,6 +1,6 @@
 # LSL.jl
 
-[![Build Status](https://travis-ci.com/samuelpowell/LSL.jl.svg?branch=master)](https://travis-ci.org/samuelpowell/LSL.jl)
+[![Build Status](https://travis-ci.org/samuelpowell/LSL.jl.svg?branch=master)](https://travis-ci.org/samuelpowell/LSL.jl)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/samuelpowell/LSL.jl?svg=true)](https://ci.appveyor.com/project/samuelpowell/LSL-jl)
 
 LSL.jl is a Julia interface to the [lab streaming layer]([https://github.com/sccn/liblsl])
