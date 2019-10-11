@@ -102,3 +102,6 @@
   #@test_broken length(info_q11) == 2
 
 end
+
+# Force cleanup
+GC.gc()

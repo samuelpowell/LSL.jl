@@ -28,12 +28,12 @@ end
     streams = resolve_byprop("source_id", "ChunkOneTest$(string(T))ID", timeout = 5.0)
     inlet = StreamInlet(streams[1])
     open_stream(inlet)
-    sleep(0.5)
+    #sleep(0.5)
 
     # Make some data, and send it once the inlet has opened
     data_in = rand(T, count, chunks)
     push_chunk(outlet, data_in)
-    sleep(0.5)
+    #sleep(0.5)
 
     # Pull the sample
     timestamps, data_out = pull_chunk(inlet, max_samples = chunks, timeout = 15.0)
@@ -44,6 +44,9 @@ end
     close_stream(inlet)
 
   end
+
+  # Force cleanup
+  GC.gc()
 
 end
 
@@ -66,13 +69,13 @@ end
     streams = resolve_byprop("source_id", "ChunkMultiTest$(string(T))ID", timeout = 5.0)
     inlet = StreamInlet(streams[1])
     open_stream(inlet)
-    sleep(0.5)
+    #sleep(0.5)
 
     # Make some data, and send it once the inlet has opened
     data_in = rand(T, count, chunks)
     timestamps_in = rand(Float64, chunks)
     push_chunk(outlet, data_in, timestamps_in)
-    sleep(0.5)
+    #sleep(0.5)
 
     # Pull the sample
     timestamps, data_out = pull_chunk(inlet, max_samples = chunks, timeout = 15.0)
@@ -84,5 +87,8 @@ end
     close_stream(inlet)
 
   end
+
+  # Force cleanup
+  GC.gc()
 
 end
