@@ -8,11 +8,10 @@ library.
 
 ## Installation & Platform Support
 
-Install and build LSL.jl using the package manager:
+LSL is a registered package. Install and using the package manager:
 
 ```julia
-]add https://github.com/samuelpowell/LSL.jl.git
-]build LSL
+]add LSL
 ```
 
 Official library builds are employed for Windows (x86 and x64), with Linux (x86, x64, 
