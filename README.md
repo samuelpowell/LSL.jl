@@ -8,7 +8,7 @@ library.
 
 ## Installation & Platform Support
 
-LSL is a registered package. Install and using the package manager:
+LSL is a registered package. Install using the package manager:
 
 ```julia
 ]add LSL
