@@ -1,5 +1,12 @@
 using BinaryProvider # requires BinaryProvider 0.3.0 or later
 
+# Locate 7z for Windows extraction
+if isdefined(Base, :LIBEXECDIR)
+     const exe7z = joinpath(Sys.BINDIR, Base.LIBEXECDIR, "7z.exe")
+ else
+     const exe7z = joinpath(Sys.BINDIR, "7z.exe")
+ end
+
 # Parse some basic command-line arguments
 const verbose = "--verbose" in ARGS
 const prefix = Prefix(get([a for a in ARGS if a != "--verbose"], 1, joinpath(@__DIR__, "usr")))
@@ -48,7 +55,6 @@ end
 @static if Sys.iswindows()
 
     dllprefix = joinpath(@__DIR__, "usr") 
-    exe7z = joinpath(Sys.BINDIR, "7z.exe")
     dlpath = joinpath(@__DIR__, "usr", "downloads", "liblsl-1.13.0-official.7z")
     
     if Sys.WORD_SIZE == 64
