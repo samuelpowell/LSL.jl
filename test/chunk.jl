@@ -41,8 +41,12 @@ end
     @test size(data_out,2) == chunks
 
     # Close the stream
-    close_stream(inlet)
-
+    # close_stream(inlet)
+    LSL._destroy(inlet)
+    LSL._destroy(outlet)
+    LSL._destroy(info)
+    sleep(0.1)
+    
   end
 
   # Force cleanup
@@ -84,7 +88,13 @@ end
     @test size(data_out,2) == chunks
 
     # Close the stream
-    close_stream(inlet)
+    # close_stream(inlet)
+
+    # Force destruction of outlet and info before continuing
+    LSL._destroy(inlet)
+    LSL._destroy(outlet)
+    LSL._destroy(info)
+    sleep(0.1)
 
   end
 

@@ -22,6 +22,7 @@ end
 function _destroy(outlet::StreamOutlet)
   if outlet.handle != C_NULL
     lib.lsl_destroy_outlet(outlet)
+    outlet.handle = C_NULL
   end
   return nothing
 end

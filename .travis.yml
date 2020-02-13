@@ -23,7 +23,6 @@ matrix:
       arch: arm64
   allow_failures:
     - julia: nightly
-    - os: windows
     - arch: arm64
   fast_finish: true
 notifications:

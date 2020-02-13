@@ -29,6 +29,7 @@ unsafe_convert(::Type{lib.lsl_continuous_resolver}, resolver::ContinuousResolver
 function _destroy(resolver::ContinuousResolver)
   if resolver.handle != C_NULL
     lib.lsl_destroy_continuous_resolver(resolver)
+    resolver.handle = C_NULL
   end
   return nothing
 end

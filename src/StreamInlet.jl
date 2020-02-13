@@ -21,6 +21,7 @@ end
 function _destroy(inlet::StreamInlet)
   if inlet.handle != C_NULL
     lib.lsl_destroy_inlet(inlet)
+    inlet.handle = C_NULL
   end
   return nothing
 end

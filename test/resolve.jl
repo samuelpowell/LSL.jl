@@ -101,7 +101,19 @@
   @test length(info_q10) == 1
   #@test_broken length(info_q11) == 2
 
+  # Force destruction of outlet and info before continuing
+  LSL._destroy(outlet1)
+  LSL._destroy(info1)
+  LSL._destroy(outlet2)
+  LSL._destroy(info2)
+  LSL._destroy(outlet3)
+  LSL._destroy(info3)
+  LSL._destroy(outlet4)
+  LSL._destroy(info4)
+  sleep(0.1)
+
 end
+
 
 # Force cleanup
 GC.gc()

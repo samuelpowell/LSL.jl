@@ -37,7 +37,13 @@ end
     @test all(data_out .== data_in)
 
     # Close the stream
-    close_stream(inlet)
+    # close_stream(inlet)
+
+    # Force destruction of outlet and info before continuing
+    LSL._destroy(inlet)
+    LSL._destroy(outlet)
+    LSL._destroy(info)
+    sleep(0.1)
 
   end
 
