@@ -6,7 +6,7 @@
 LSL.jl is a Julia interface to the [lab streaming layer]([https://github.com/sccn/liblsl])
 library.
 
-## Installation & Platform Support
+## Installation 
 
 LSL is a registered package. Install using the package manager:
 
@@ -14,10 +14,18 @@ LSL is a registered package. Install using the package manager:
 ]add LSL
 ```
 
-Official library builds are employed for Windows (x86 and x64), with Linux (x86, x64, 
-ARMv7, ARMv8), MacOS and FreeBSD utilising cross-compiled libraries built using the
-[BinaryProvider](https://github.com/JuliaPackaging/BinaryProvider.jl) package. Only Intel
-architectures are tested with CI, so the function of the ARM builds is not gauranteed.
+## Platform support
+
+The package currently works on Windows (x64 only), Linux (x86 and x64), and MacOS.
+
+For Julia > 1.3, the underlying library is cross-compiled for Windows (x86 and x64), Linux
+(x86, x64, ARMv7, ARMv8), MacOS, and FreeBSD using the 
+[BinaryBuilder](https://github.com/JuliaPackaging/BinaryBuilder.jl) 
+package, with CI builds undertaken on the
+[Yggdrasil](https://github.com/JuliaPackaging/Yggdrasil/tree/master/L/liblsl)
+platform. Binaries are packaged and supplied through the 
+[JuliaBinaryWrappers](https://github.com/JuliaBinaryWrappers/liblsl_jll.jl)
+organisation.
 
 ## Usage
 
