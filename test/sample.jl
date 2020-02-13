@@ -27,10 +27,12 @@ end
     streams = resolve_byprop("source_id", "SampleTest$(string(T))ID", timeout = 5.0)
     inlet = StreamInlet(streams[1])
     open_stream(inlet)
+    sleep(0.1)
 
     # Make some data, and send it once the inlet has opened
     data_in = rand(T, count)
     push_sample(outlet, data_in)
+    sleep(0.1)
 
     # Pull the sample
     timestamp, data_out = pull_sample(inlet, timeout = 10.0)
