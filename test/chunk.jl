@@ -4,7 +4,7 @@
 # test/chunk.jl: test sending and receiving of chunks of supported datatypes
 
 @static if !Sys.iswindows() && Sys.WORD_SIZE == 64
-  testtypes = (Int8, Int16, Int32, Int64, Float32, Float64) 
+  testtypes = (Int8, Int16, Int32, Float32, Float64) 
 else
   testtypes = (Int8, Int16, Int32, Float32, Float64) 
 end
