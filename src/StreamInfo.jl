@@ -96,6 +96,7 @@ end
 function _destroy(info::StreamInfo)
   if info.handle != C_NULL
     lib.lsl_destroy_streaminfo(info)
+    info.handle = C_NULL
   end
   return nothing
 end

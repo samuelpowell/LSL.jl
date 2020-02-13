@@ -4,7 +4,7 @@
 # test/sample.jl: test sending and receiving of samples supported datatypes
 
 @static if !Sys.iswindows() && Sys.WORD_SIZE == 64
-  testtypes = (Int8, Int16, Int32, Int64, Float32, Float64) 
+  testtypes = (Int8, Int16, Int32, Float32, Float64) 
 else
   testtypes = (Int8, Int16, Int32, Float32, Float64) 
 end
@@ -27,17 +27,25 @@ end
     streams = resolve_byprop("source_id", "SampleTest$(string(T))ID", timeout = 5.0)
     inlet = StreamInlet(streams[1])
     open_stream(inlet)
+    sleep(0.1)
 
     # Make some data, and send it once the inlet has opened
     data_in = rand(T, count)
     push_sample(outlet, data_in)
+    sleep(0.1)
 
     # Pull the sample
     timestamp, data_out = pull_sample(inlet, timeout = 10.0)
     @test all(data_out .== data_in)
 
     # Close the stream
-    close_stream(inlet)
+    # close_stream(inlet)
+
+    # Force destruction of outlet and info before continuing
+    LSL._destroy(inlet)
+    LSL._destroy(outlet)
+    LSL._destroy(info)
+    sleep(0.1)
 
   end
 
