@@ -23,7 +23,7 @@ LSL is a registered package. Install using the package manager:
 For Julia > 1.3, the library is cross-compiled for Windows (x64), Linux (x86, x64, ARMv7, ARMv8),
 MacOS, and FreeBSD using the [BinaryBuilder](https://github.com/JuliaPackaging/BinaryBuilder.jl) 
 package, with CI builds undertaken on the [Yggdrasil](https://github.com/JuliaPackaging/Yggdrasil/tree/master/L/liblsl)
-platform. Binaries are packaged and supplied through the [JuliaBinaryWrappers] (https://github.com/JuliaBinaryWrappers/liblsl_jll.jl) organisation. Platforms for which the library
+platform. Binaries are packaged and supplied through the [JuliaBinaryWrappers](https://github.com/JuliaBinaryWrappers/liblsl_jll.jl) organisation. Platforms for which the library
 are built, but not listed as supported, are untested or known to fail.
 
 ## Usage
