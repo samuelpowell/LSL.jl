@@ -3,10 +3,10 @@
 [![Build Status](https://travis-ci.org/samuelpowell/LSL.jl.svg?branch=master)](https://travis-ci.org/samuelpowell/LSL.jl)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/samuelpowell/LSL.jl?svg=true)](https://ci.appveyor.com/project/samuelpowell/LSL-jl)
 
-LSL.jl is a Julia interface to the [lab streaming layer]([https://github.com/sccn/liblsl])
+A Julia interface to the [lab streaming layer]([https://github.com/sccn/liblsl])
 library.
 
-## Installation 
+## Installation & platform support
 
 LSL is a registered package. Install using the package manager:
 
@@ -14,18 +14,17 @@ LSL is a registered package. Install using the package manager:
 ]add LSL
 ```
 
-## Platform support
+| Platform        | Architecture                  | Notes                                   |
+| -------------   | ----------------------------- | --------------------------------------- |
+| Linux (x86)     | 32-bit and 64-bit             | CI active                               |
+| MacOS           | 64-bit                        | CI active                               |
+| Windows         | 64-bit                        | CI active                               |
 
-The package currently works on Windows (x64 only), Linux (x86 and x64), and MacOS.
-
-For Julia > 1.3, the underlying library is cross-compiled for Windows (x86 and x64), Linux
-(x86, x64, ARMv7, ARMv8), MacOS, and FreeBSD using the 
-[BinaryBuilder](https://github.com/JuliaPackaging/BinaryBuilder.jl) 
-package, with CI builds undertaken on the
-[Yggdrasil](https://github.com/JuliaPackaging/Yggdrasil/tree/master/L/liblsl)
-platform. Binaries are packaged and supplied through the 
-[JuliaBinaryWrappers](https://github.com/JuliaBinaryWrappers/liblsl_jll.jl)
-organisation.
+For Julia > 1.3, the library is cross-compiled for Windows (x64), Linux (x86, x64, ARMv7, ARMv8),
+MacOS, and FreeBSD using the [BinaryBuilder](https://github.com/JuliaPackaging/BinaryBuilder.jl) 
+package, with CI builds undertaken on the [Yggdrasil](https://github.com/JuliaPackaging/Yggdrasil/tree/master/L/liblsl)
+platform. Binaries are packaged and supplied through the [JuliaBinaryWrappers] (https://github.com/JuliaBinaryWrappers/liblsl_jll.jl) organisation. Platforms for which the library
+are built, but not listed as supported, are untested or known to fail.
 
 ## Usage
 
