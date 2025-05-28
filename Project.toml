@@ -13,7 +13,7 @@ liblsl_jll = "b37880e1-55fa-5503-9f1a-f1223ce0b53e"
 CEnum = "^0.2.0"
 LightXML = "^0.9.0"
 julia = "^1.3.0"
-liblsl_jll = "^1.13.0"
+liblsl_jll = "1.16.2"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
